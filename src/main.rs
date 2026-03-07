@@ -34,14 +34,6 @@ async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
 
     spawner.must_spawn(logger_task(p.USB));
-
-    let mut i: u8 = 0;
-    loop {
-        i = i.wrapping_add(1);
-        log::info!("USB says: {}", i);
-
-        Timer::after_secs(1).await;
-    }
 }
 
 #[embassy_executor::task]
