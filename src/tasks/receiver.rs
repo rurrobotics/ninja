@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[embassy_executor::task]
-pub async fn task(mut control: Control<'static>, stack: Stack<'static>) {
+pub async fn task(mut control: Control<'static>, stack: Stack<'static>) -> ! {
     let mut rx_buffer = [0; RECEIVER_BUFFER_SIZE];
     let mut tx_buffer = [0; RECEIVER_BUFFER_SIZE];
     let mut buf = [0; RECEIVER_BUFFER_SIZE];

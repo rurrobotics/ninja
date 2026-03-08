@@ -8,7 +8,7 @@ pub async fn task(
     pwm7: embassy_rp::Peri<'static, PWM_SLICE7>,
     gp10: embassy_rp::Peri<'static, PIN_10>,
     gp15: embassy_rp::Peri<'static, PIN_15>,
-) {
+) -> ! {
     let mut config1 = Config::default();
     config1.top = 20000;
     config1.divider = 125.into();
