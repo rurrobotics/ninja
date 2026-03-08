@@ -12,10 +12,12 @@ use embassy_rp::{
     bind_interrupts,
     clocks::RoscRng,
     gpio::{Level, Output},
-    peripherals::{DMA_CH0, PIO0, USB},
+    peripherals::{DMA_CH0, PIN_10, PIN_15, PIO0, PWM_SLICE5, PWM_SLICE7, USB},
     pio::{self, Pio},
+    pwm::{Config as PwmConfig, Pwm},
     usb,
 };
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, channel::Channel};
 use embassy_time::Duration;
 use embedded_io_async::Write;
 use panic_halt as _;
@@ -37,10 +39,16 @@ bind_interrupts!(struct Irqs {
     PIO0_IRQ_0 => pio::InterruptHandler<PIO0>;
 });
 
+static COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, RequestPacket, 1> = Channel::new();
+
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
     spawner.must_spawn(logger_task(p.USB));
+
+    let _gp12 = Output::new(p.PIN_12, Level::High);
+    let _gp3 = Output::new(p.PIN_3, Level::High);
+    let _gp20 = Output::new(p.PIN_20, Level::High);
 
     let fw = include_bytes!("../firmware/43439A0.bin");
     let clm = include_bytes!("../firmware/43439A0_clm.bin");
@@ -107,6 +115,47 @@ async fn main(spawner: Spawner) {
 }
 
 #[embassy_executor::task]
+async fn actuator_task(
+    pwm5: embassy_rp::Peri<'static, PWM_SLICE5>,
+    gp10: embassy_rp::Peri<'static, PIN_10>,
+    gp15: embassy_rp::Peri<'static, PIN_15>,
+    pwm7: embassy_rp::Peri<'static, PWM_SLICE7>,
+) {
+    let mut config1 = PwmConfig::default();
+    config1.top = 20000;
+    config1.divider = 125.into();
+    let servo1 = Pwm::new_output_a(pwm5, gp10, config1);
+
+    let mut config2 = PwmConfig::default();
+    config2.top = 20000;
+    config2.divider = 125.into();
+    let servo2 = Pwm::new_output_b(pwm7, gp15, config2);
+
+    fn angle_to_duty(angle: u32) -> u16 {
+        let pulse_us = 1000 + (angle.min(180) * 1000 / 180);
+        pulse_us as u16
+    }
+
+    loop {
+        let cmd = COMMAND_CHANNEL.receive().await;
+
+        log::info!("Actuator received: {:?}", cmd);
+
+        if let Some(angle) = cmd.servo1 {
+            let duty = angle_to_duty(angle);
+            servo1.set_counter(duty);
+        }
+
+        if let Some(angle) = cmd.servo2 {
+            let duty = angle_to_duty(angle);
+            servo2.set_counter(duty);
+        }
+
+        // TODO: Stepper
+    }
+}
+
+#[embassy_executor::task]
 async fn receiver_task(mut control: Control<'static>, stack: Stack<'static>) {
     let mut rx_buffer = [0; 4096];
     let mut tx_buffer = [0; 4096];
@@ -148,6 +197,7 @@ async fn receiver_task(mut control: Control<'static>, stack: Stack<'static>) {
             };
 
             log::info!("{:?}", req);
+            COMMAND_CHANNEL.send(req).await;
 
             let resp = match postcard::to_vec::<_, 4>(&ResponsePacket { status: true }) {
                 Ok(rp) => rp,
