@@ -5,15 +5,21 @@ pub mod config;
 pub mod interrupts;
 pub mod packet;
 pub mod tasks;
-pub mod wrappers;
 
 use cyw43::JoinOptions;
+use cyw43_pio::{PioSpi, RM2_CLOCK_DIVIDER};
 use embassy_executor::Spawner;
+use embassy_net::{Config, StackResources};
+use embassy_rp::clocks::RoscRng;
 use embassy_rp::gpio::{Level, Output};
+use embassy_rp::pio::Pio;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::channel::Channel;
 use panic_halt as _;
+use static_cell::StaticCell;
 
+use crate::config::CYW43_POWER_MANAGEMENT_MODE;
+use crate::interrupts::Irqs;
 use crate::packet::RequestPacket;
 
 #[unsafe(link_section = ".bi_entries")]
@@ -37,11 +43,46 @@ async fn main(spawner: Spawner) {
     let _gp3 = Output::new(p.PIN_3, Level::High);
     let _gp20 = Output::new(p.PIN_20, Level::High);
 
-    let (net_device, mut control, runner, clm) =
-        wrappers::cyw43(p.PIN_23, p.PIN_24, p.PIN_25, p.PIN_29, p.DMA_CH0, p.PIO0).await;
+    let fw = include_bytes!("../firmware/43439A0.bin");
+    let clm = include_bytes!("../firmware/43439A0_clm.bin");
+
+    let pwr = Output::new(p.PIN_23, Level::Low);
+    let cs = Output::new(p.PIN_25, Level::High);
+    let mut pio = Pio::new(p.PIO0, Irqs);
+    let spi = PioSpi::new(
+        &mut pio.common,
+        pio.sm0,
+        // SPI communication won't work if the speed is too high, so we use a divider larger than `DEFAULT_CLOCK_DIVIDER`.
+        // See: https://github.com/embassy-rs/embassy/issues/3960.
+        RM2_CLOCK_DIVIDER,
+        pio.irq0,
+        cs,
+        p.PIN_24,
+        p.PIN_29,
+        p.DMA_CH0,
+    );
+
+    static STATE: StaticCell<cyw43::State> = StaticCell::new();
+    let state = STATE.init(cyw43::State::new());
+    let (net_device, mut control, runner) = cyw43::new(state, pwr, spi, fw).await;
     spawner.must_spawn(tasks::cyw43(runner));
 
-    let (stack, runner) = wrappers::wifi(net_device).await;
+    control.init(clm).await;
+    control
+        .set_power_management(CYW43_POWER_MANAGEMENT_MODE)
+        .await;
+
+    let config = Config::dhcpv4(Default::default());
+
+    let seed = RoscRng.next_u64();
+
+    static RESOURCES: StaticCell<StackResources<3>> = StaticCell::new();
+    let (stack, runner) = embassy_net::new(
+        net_device,
+        config,
+        RESOURCES.init(StackResources::new()),
+        seed,
+    );
     spawner.must_spawn(tasks::net(runner));
 
     while let Err(err) = control
@@ -62,11 +103,13 @@ async fn main(spawner: Spawner) {
 
     log::info!("{:?}", stack.config_v4());
 
-    spawner.must_spawn(tasks::receiver(control, stack));
     spawner.must_spawn(tasks::actuator(
         p.PWM_SLICE5,
         p.PWM_SLICE7,
         p.PIN_10,
         p.PIN_15,
     ));
+    spawner.must_spawn(tasks::receiver(stack));
+
+    core::future::pending::<()>().await;
 }
