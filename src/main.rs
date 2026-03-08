@@ -109,7 +109,7 @@ async fn main(spawner: Spawner) {
         p.PIN_10,
         p.PIN_15,
     ));
-    spawner.must_spawn(tasks::receiver(stack));
+    spawner.must_spawn(tasks::receiver(control, stack));
 
     core::future::pending::<()>().await;
 }
