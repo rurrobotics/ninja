@@ -1,5 +1,7 @@
 use core::ffi::CStr;
 
+use cyw43::PowerManagementMode;
+
 pub const NAME: &CStr = unsafe {
     CStr::from_bytes_with_nul_unchecked(concat!(env!("CARGO_PKG_NAME"), "\0").as_bytes())
 };
@@ -10,3 +12,5 @@ pub const DESCRIPTION: &CStr = unsafe {
 
 pub const WIFI_NETWORK: &'static str = env!("WIFI_NETWORK");
 pub const WIFI_PASSWORD: &'static str = env!("WIFI_PASSWORD");
+
+pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
