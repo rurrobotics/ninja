@@ -2,13 +2,12 @@
 #![no_main]
 
 pub mod conf;
+pub mod packet;
 
-use core::str::from_utf8;
-
-use cyw43::JoinOptions;
+use cyw43::{Control, JoinOptions};
 use cyw43_pio::{PioSpi, RM2_CLOCK_DIVIDER};
 use embassy_executor::Spawner;
-use embassy_net::{Config, StackResources, tcp::TcpSocket};
+use embassy_net::{Config, Stack, StackResources, tcp::TcpSocket};
 use embassy_rp::{
     bind_interrupts,
     clocks::RoscRng,
@@ -21,6 +20,8 @@ use embassy_time::Duration;
 use embedded_io_async::Write;
 use panic_halt as _;
 use static_cell::StaticCell;
+
+use crate::packet::{RequestPacket, ResponsePacket};
 
 #[unsafe(link_section = ".bi_entries")]
 #[used]
@@ -85,7 +86,10 @@ async fn main(spawner: Spawner) {
     spawner.must_spawn(net_task(runner));
 
     while let Err(err) = control
-        .join(conf::WIFI_NETWORK, JoinOptions::new(conf::WIFI_PASSWORD.as_bytes()))
+        .join(
+            conf::WIFI_NETWORK,
+            JoinOptions::new(conf::WIFI_PASSWORD.as_bytes()),
+        )
         .await
     {
         log::info!("join failed with status={:?}", err);
@@ -99,13 +103,18 @@ async fn main(spawner: Spawner) {
 
     log::info!("{:?}", stack.config_v4());
 
+    spawner.must_spawn(receiver_task(control, stack));
+}
+
+#[embassy_executor::task]
+async fn receiver_task(mut control: Control<'static>, stack: Stack<'static>) {
     let mut rx_buffer = [0; 4096];
     let mut tx_buffer = [0; 4096];
     let mut buf = [0; 4096];
 
     loop {
         let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-        socket.set_timeout(Some(Duration::from_secs(10)));
+        socket.set_keep_alive(Some(Duration::from_secs(10)));
 
         control.gpio_set(0, false).await;
         log::info!("Listening on TCP:1234...");
@@ -130,9 +139,25 @@ async fn main(spawner: Spawner) {
                 }
             };
 
-            log::info!("rxd {}", from_utf8(&buf[..n]).unwrap());
+            let req: RequestPacket = match postcard::from_bytes(&buf[..n]) {
+                Ok(rp) => rp,
+                Err(e) => {
+                    log::warn!("format is invalid: {:?}", e);
+                    break;
+                }
+            };
 
-            match socket.write_all(&buf[..n]).await {
+            log::info!("{:?}", req);
+
+            let resp = match postcard::to_vec::<_, 4>(&ResponsePacket { status: true }) {
+                Ok(rp) => rp,
+                Err(e) => {
+                    log::warn!("response error: {:?}", e);
+                    break;
+                }
+            };
+
+            match socket.write_all(&resp).await {
                 Ok(()) => {}
                 Err(e) => {
                     log::warn!("write error: {:?}", e);
@@ -144,14 +169,14 @@ async fn main(spawner: Spawner) {
 }
 
 #[embassy_executor::task]
-async fn net_task(mut runner: embassy_net::Runner<'static, cyw43::NetDriver<'static>>) -> ! {
+async fn net_task(mut runner: embassy_net::Runner<'static, cyw43::NetDriver<'static>>) {
     runner.run().await
 }
 
 #[embassy_executor::task]
 async fn cyw43_task(
     runner: cyw43::Runner<'static, Output<'static>, PioSpi<'static, PIO0, 0, DMA_CH0>>,
-) -> ! {
+) {
     runner.run().await
 }
 
