@@ -1,22 +1,22 @@
 use cyw43::Control;
 use embassy_net::{Stack, tcp::TcpSocket};
-use embassy_time::Duration;
 use embedded_io_async::Write as _;
 
 use crate::{
     COMMAND_CHANNEL,
+    config::{RECEIVER_BUFFER_SIZE, RECEIVER_KEEP_ALIVE_INTERVAL},
     packet::{RequestPacket, ResponsePacket},
 };
 
 #[embassy_executor::task]
 pub async fn task(mut control: Control<'static>, stack: Stack<'static>) {
-    let mut rx_buffer = [0; 4096];
-    let mut tx_buffer = [0; 4096];
-    let mut buf = [0; 4096];
+    let mut rx_buffer = [0; RECEIVER_BUFFER_SIZE];
+    let mut tx_buffer = [0; RECEIVER_BUFFER_SIZE];
+    let mut buf = [0; RECEIVER_BUFFER_SIZE];
 
     loop {
         let mut socket = TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-        socket.set_keep_alive(Some(Duration::from_secs(10)));
+        socket.set_keep_alive(Some(RECEIVER_KEEP_ALIVE_INTERVAL));
 
         control.gpio_set(0, false).await;
         log::info!("Listening on TCP:1234...");
