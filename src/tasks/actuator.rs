@@ -1,28 +1,29 @@
-use embassy_rp::{peripherals::{PIN_10, PIN_15, PWM_SLICE5, PWM_SLICE7}, pwm::{Config, Pwm}};
+use embassy_rp::{
+    peripherals::{PIN_10, PIN_15, PIO0},
+    pio::{Common, StateMachine},
+    pio_programs::pwm::{PioPwm, PioPwmProgram},
+};
 
-use crate::COMMAND_CHANNEL;
+use crate::{COMMAND_CHANNEL, actuators::Servo};
 
 #[embassy_executor::task]
 pub async fn task(
-    pwm5: embassy_rp::Peri<'static, PWM_SLICE5>,
-    pwm7: embassy_rp::Peri<'static, PWM_SLICE7>,
+    mut common: Common<'static, PIO0>,
+    sm1: StateMachine<'static, PIO0, 1>,
+    sm2: StateMachine<'static, PIO0, 2>,
     gp10: embassy_rp::Peri<'static, PIN_10>,
     gp15: embassy_rp::Peri<'static, PIN_15>,
 ) -> ! {
-    let mut config1 = Config::default();
-    config1.top = 20000;
-    config1.divider = 125.into();
-    let servo1 = Pwm::new_output_a(pwm5, gp10, config1);
+    let prg = PioPwmProgram::new(&mut common);
 
-    let mut config2 = Config::default();
-    config2.top = 20000;
-    config2.divider = 125.into();
-    let servo2 = Pwm::new_output_b(pwm7, gp15, config2);
+    let pwm1 = PioPwm::new(&mut common, sm1, gp10, &prg);
+    let pwm2 = PioPwm::new(&mut common, sm2, gp15, &prg);
 
-    fn angle_to_duty(angle: u32) -> u16 {
-        let pulse_us = 1000 + (angle.min(180) * 1000 / 180);
-        pulse_us as u16
-    }
+    let mut servo1 = Servo::new(pwm1);
+    let mut servo2 = Servo::new(pwm2);
+
+    servo1.start();
+    servo2.start();
 
     loop {
         let cmd = COMMAND_CHANNEL.receive().await;
@@ -30,13 +31,11 @@ pub async fn task(
         log::info!("Actuator received: {:?}", cmd);
 
         if let Some(angle) = cmd.servo1 {
-            let duty = angle_to_duty(angle);
-            servo1.set_counter(duty);
+            servo1.rotate(angle);
         }
 
         if let Some(angle) = cmd.servo2 {
-            let duty = angle_to_duty(angle);
-            servo2.set_counter(duty);
+            servo2.rotate(angle);
         }
 
         // TODO: Stepper

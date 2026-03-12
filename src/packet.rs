@@ -17,8 +17,8 @@ pub struct RequestPacket {
     pub stepper1: StepperRequest,
     pub stepper2: StepperRequest,
     pub stepper3: StepperRequest,
-    pub servo1: Option<u32>,
-    pub servo2: Option<u32>,
+    pub servo1: Option<u64>,
+    pub servo2: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

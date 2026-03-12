@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+pub mod actuators;
 pub mod config;
 pub mod interrupts;
 pub mod packet;
@@ -104,10 +105,7 @@ async fn main(spawner: Spawner) {
     log::info!("{:?}", stack.config_v4());
 
     spawner.must_spawn(tasks::actuator(
-        p.PWM_SLICE5,
-        p.PWM_SLICE7,
-        p.PIN_10,
-        p.PIN_15,
+        pio.common, pio.sm1, pio.sm2, p.PIN_10, p.PIN_15,
     ));
     spawner.must_spawn(tasks::receiver(control, stack));
 
