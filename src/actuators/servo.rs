@@ -23,10 +23,6 @@ impl<'d, T: Instance, const SM: usize> Servo<'d, T, SM> {
         self.pwm.stop();
     }
 
-    pub fn write_time(&mut self, duration: Duration) {
-        self.pwm.write(duration);
-    }
-
     pub fn rotate(&mut self, degree: u64) {
         let degree_per_nano_second = (SERVO_MAX_PULSE.as_nanos() as u64
             - SERVO_MIN_PULSE.as_nanos() as u64)

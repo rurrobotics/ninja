@@ -1,22 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum StepperDirection {
-    FORWARD,
-    BACKWARD,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct StepperRequest {
-    pub distance: u32,
-    pub direction: StepperDirection,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct RequestPacket {
-    pub stepper1: StepperRequest,
-    pub stepper2: StepperRequest,
-    pub stepper3: StepperRequest,
+    pub stepper1: i64,
+    pub stepper2: i64,
+    pub stepper3: i64,
     pub servo1: Option<u64>,
     pub servo2: Option<u64>,
 }

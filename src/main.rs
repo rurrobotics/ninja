@@ -49,14 +49,15 @@ async fn main(spawner: Spawner) {
 
     let pwr = Output::new(p.PIN_23, Level::Low);
     let cs = Output::new(p.PIN_25, Level::High);
-    let mut pio = Pio::new(p.PIO0, Irqs);
+    let mut pio0 = Pio::new(p.PIO0, Irqs);
+    let mut pio1 = Pio::new(p.PIO1, Irqs);
     let spi = PioSpi::new(
-        &mut pio.common,
-        pio.sm0,
+        &mut pio0.common,
+        pio0.sm0,
         // SPI communication won't work if the speed is too high, so we use a divider larger than `DEFAULT_CLOCK_DIVIDER`.
         // See: https://github.com/embassy-rs/embassy/issues/3960.
         RM2_CLOCK_DIVIDER,
-        pio.irq0,
+        pio0.irq0,
         cs,
         p.PIN_24,
         p.PIN_29,
@@ -105,7 +106,21 @@ async fn main(spawner: Spawner) {
     log::info!("{:?}", stack.config_v4());
 
     spawner.must_spawn(tasks::actuator(
-        pio.common, pio.sm1, pio.sm2, p.PIN_10, p.PIN_15,
+        pio0.common,
+        pio1.common,
+        pio0.sm1,
+        pio0.sm2,
+        pio1.sm0,
+        pio1.sm1,
+        pio1.sm2,
+        p.PIN_5,
+        p.PIN_6,
+        p.PIN_28,
+        p.PIN_27,
+        p.PIN_18,
+        p.PIN_17,
+        p.PIN_10,
+        p.PIN_15,
     ));
     spawner.must_spawn(tasks::receiver(control, stack));
 
