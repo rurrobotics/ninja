@@ -1,4 +1,4 @@
-use core::mem::{self, MaybeUninit};
+use core::f64::consts::PI;
 use embassy_rp::{
     Peri,
     gpio::Output,
@@ -9,6 +9,8 @@ use embassy_rp::{
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
 
+use crate::config::WHEEL_DIAMETER;
+
 pub struct PioStepperProgram<'a, PIO: Instance> {
     prg: LoadedProgram<'a, PIO>,
 }
@@ -17,14 +19,12 @@ impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
     pub fn new(common: &mut Common<'a, PIO>) -> Self {
         let prg = pio_asm!(
             "pull block",
-            "mov x, osr",
-            "jmp !x end",
+            "out y, 32",
             "loop:",
-            "    set pins, 1 [31]",
-            "    set pins, 0 [31]",
-            "    jmp x-- loop",
-            "end:",
-            // "    irq 0 rel"
+            "    set pins, 1  [31]",
+            "    set pins, 0  [31]",
+            "    jmp y-- loop",
+            "    jmp 0",
         );
 
         let prg = common.load_program(&prg.program);
@@ -33,13 +33,13 @@ impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
     }
 }
 
-pub struct PioStepper<'d, T: Instance, const SM: usize> {
+pub struct Stepper<'d, T: Instance, const SM: usize> {
     // irq: Irq<'d, T, SM>,
     sm: StateMachine<'d, T, SM>,
     dir: Output<'d>,
 }
 
-impl<'d, T: Instance, const SM: usize> PioStepper<'d, T, SM> {
+impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
     pub fn new(
         pio: &mut Common<'d, T>,
         mut sm: StateMachine<'d, T, SM>,
@@ -55,18 +55,17 @@ impl<'d, T: Instance, const SM: usize> PioStepper<'d, T, SM> {
         cfg.set_set_pins(&[&stp]);
 
         // TODO: Check this value
-        cfg.clock_divider = calculate_pio_clock_divider(1000);
+        cfg.clock_divider = calculate_pio_clock_divider(250 * 80);
 
         cfg.use_program(&program.prg, &[]);
         sm.set_config(&cfg);
         sm.set_enable(true);
-
         Self { sm, dir }
     }
 
     pub fn set_frequency(&mut self, freq: u32) {
         // TODO: Magic value copied from 4 pin stepper, inspect this
-        let clock_divider = calculate_pio_clock_divider(freq * 136);
+        let clock_divider = calculate_pio_clock_divider(freq * 80);
         let divider_f32 = clock_divider.to_num::<f32>();
         assert!(divider_f32 <= 65536.0, "clkdiv must be <= 65536");
         assert!(divider_f32 >= 1.0, "clkdiv must be >= 1");
@@ -78,11 +77,11 @@ impl<'d, T: Instance, const SM: usize> PioStepper<'d, T, SM> {
     pub async fn step(&mut self, steps: i32) {
         let steps = match steps >= 0 {
             true => {
-                self.dir.is_set_high();
+                self.dir.set_high();
                 steps
             }
             false => {
-                self.dir.is_set_low();
+                self.dir.set_low();
                 -steps
             }
         };
@@ -90,8 +89,9 @@ impl<'d, T: Instance, const SM: usize> PioStepper<'d, T, SM> {
         self.sm.tx().wait_push(steps as u32).await;
     }
 
-    pub async fn run() {
-        
+    pub async fn drive(&mut self, distance: i32) {
+        self.step(libm::round(800_f64 * distance as f64 / WHEEL_DIAMETER as f64 / PI) as i32)
+            .await;
     }
 
     pub async fn wait(&mut self) {
