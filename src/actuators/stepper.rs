@@ -3,13 +3,15 @@ use embassy_rp::{
     Peri,
     gpio::Output,
     pio::{
-        Common, Config, Direction, Instance, Irq, LoadedProgram, PioPin, StateMachine,
+        Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine,
         program::pio_asm,
     },
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
 
-use crate::config::WHEEL_DIAMETER;
+use crate::config::{STEPPER_DEFAULT_FREQUENCY, STEPPER_STEPS_PER_REVOLUTION, WHEEL_DIAMETER};
+
+const INSTRUCTION_COUNT: u32 = 32 + 32 + 1;
 
 pub struct PioStepperProgram<'a, PIO: Instance> {
     prg: LoadedProgram<'a, PIO>,
@@ -18,13 +20,14 @@ pub struct PioStepperProgram<'a, PIO: Instance> {
 impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
     pub fn new(common: &mut Common<'a, PIO>) -> Self {
         let prg = pio_asm!(
+            ".wrap_target",
             "pull block",
-            "out y, 32",
+            "out x, 32",
             "loop:",
             "    set pins, 1  [31]",
             "    set pins, 0  [31]",
-            "    jmp y-- loop",
-            "    jmp 0",
+            "    jmp x-- loop",
+            ".wrap"
         );
 
         let prg = common.load_program(&prg.program);
@@ -54,8 +57,8 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         let mut cfg = Config::default();
         cfg.set_set_pins(&[&stp]);
 
-        // TODO: Check this value
-        cfg.clock_divider = calculate_pio_clock_divider(250 * 80);
+        cfg.clock_divider =
+            calculate_pio_clock_divider(STEPPER_DEFAULT_FREQUENCY * INSTRUCTION_COUNT);
 
         cfg.use_program(&program.prg, &[]);
         sm.set_config(&cfg);
@@ -65,7 +68,7 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
 
     pub fn set_frequency(&mut self, freq: u32) {
         // TODO: Magic value copied from 4 pin stepper, inspect this
-        let clock_divider = calculate_pio_clock_divider(freq * 80);
+        let clock_divider = calculate_pio_clock_divider(freq * INSTRUCTION_COUNT);
         let divider_f32 = clock_divider.to_num::<f32>();
         assert!(divider_f32 <= 65536.0, "clkdiv must be <= 65536");
         assert!(divider_f32 >= 1.0, "clkdiv must be >= 1");
@@ -90,11 +93,14 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
     }
 
     pub async fn drive(&mut self, distance: i32) {
-        self.step(libm::round(800_f64 * distance as f64 / WHEEL_DIAMETER as f64 / PI) as i32)
+        self.step(libm::round(
+            STEPPER_STEPS_PER_REVOLUTION as f64 * distance as f64 / WHEEL_DIAMETER as f64 / PI,
+        ) as i32)
             .await;
     }
 
     pub async fn wait(&mut self) {
+        // TODO: Fix this
         while !self.sm.tx().empty() {
             embassy_time::Timer::after_micros(10).await;
         }

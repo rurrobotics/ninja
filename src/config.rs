@@ -26,6 +26,8 @@ pub const SERVO_MAX_DEGREE_ROTATION: u64 = 180;
 pub const SERVO_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(20000);
 
 pub const STEPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1000);
+pub const STEPPER_DEFAULT_FREQUENCY: u32 = 250;
+pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 
 pub const WHEEL_DIAMETER: i32 = 56;
 pub const WHEEL_DISTANCE: i32 = 131;
