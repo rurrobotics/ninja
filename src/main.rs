@@ -15,7 +15,7 @@ use embassy_rp::clocks::RoscRng;
 use embassy_rp::gpio::{Level, Output};
 use embassy_rp::pio::Pio;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
-use embassy_sync::channel::Channel;
+use embassy_sync::signal::Signal;
 use panic_halt as _;
 use static_cell::StaticCell;
 
@@ -32,7 +32,7 @@ pub static PICOTOOL_ENTRIES: [embassy_rp::binary_info::EntryAddr; 4] = [
     embassy_rp::binary_info::rp_program_build_attribute!(),
 ];
 
-static COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, RequestPacket, 1> = Channel::new();
+static COMMAND_CHANNEL: Signal<CriticalSectionRawMutex, RequestPacket> = Signal::new();
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {

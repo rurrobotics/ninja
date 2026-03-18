@@ -50,7 +50,7 @@ pub async fn task(mut control: Control<'static>, stack: Stack<'static>) -> ! {
             };
 
             log::info!("{:?}", req);
-            COMMAND_CHANNEL.send(req).await;
+            COMMAND_CHANNEL.signal(req);
 
             let resp = match postcard::to_vec::<_, 4>(&ResponsePacket { status: true }) {
                 Ok(rp) => rp,

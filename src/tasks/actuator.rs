@@ -50,7 +50,7 @@ pub async fn task(
     // servo2.start();
 
     loop {
-        let cmd = COMMAND_CHANNEL.receive().await;
+        let cmd = COMMAND_CHANNEL.wait().await;
 
         log::info!("Actuator received: {:?}", cmd);
 
@@ -61,7 +61,6 @@ pub async fn task(
         // if let Some(angle) = cmd.servo2 {
         //     servo2.rotate(angle);
         // }
-
 
         if cmd.stepper1 != 0 {
             // log::info!("{}", cmd.stepper1);
