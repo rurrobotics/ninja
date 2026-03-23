@@ -43,7 +43,7 @@ async fn main(spawner: Spawner) {
     let _gp12 = Output::new(p.PIN_12, Level::High);
     let _gp3 = Output::new(p.PIN_3, Level::High);
     let _gp20 = Output::new(p.PIN_20, Level::High);
-    
+
     let fw = include_bytes!("../firmware/43439A0.bin");
     let clm = include_bytes!("../firmware/43439A0_clm.bin");
 
@@ -63,6 +63,25 @@ async fn main(spawner: Spawner) {
         p.PIN_29,
         p.DMA_CH0,
     );
+
+    spawner.must_spawn(tasks::actuator(
+        pio0.common,
+        pio1.common,
+        pio0.sm1,
+        pio0.sm2,
+        pio1.sm0,
+        pio1.sm1,
+        pio1.sm2,
+        p.PIN_8,
+        p.PIN_5,
+        p.PIN_6,
+        p.PIN_28,
+        p.PIN_27,
+        p.PIN_18,
+        p.PIN_17,
+        p.PIN_10,
+        p.PIN_15,
+    ));
 
     static STATE: StaticCell<cyw43::State> = StaticCell::new();
     let state = STATE.init(cyw43::State::new());
@@ -105,24 +124,6 @@ async fn main(spawner: Spawner) {
 
     log::info!("{:?}", stack.config_v4());
 
-    spawner.must_spawn(tasks::actuator(
-        pio0.common,
-        pio1.common,
-        pio0.sm1,
-        pio0.sm2,
-        pio1.sm0,
-        pio1.sm1,
-        pio1.sm2,
-        p.PIN_8,
-        p.PIN_5,
-        p.PIN_6,
-        p.PIN_28,
-        p.PIN_27,
-        p.PIN_18,
-        p.PIN_17,
-        p.PIN_10,
-        p.PIN_15,
-    ));
     spawner.must_spawn(tasks::receiver(control, stack));
 
     core::future::pending::<()>().await;
