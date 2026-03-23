@@ -49,7 +49,7 @@ def main():
         print("Connected!")
 
         while True:
-            packet = create_request_packet(0, 0, 0)
+            packet = create_request_packet(0, 0, int(input("Stepper: ")))
             print(f"Sending: {packet.hex()}")
             sock.sendall(packet)
 

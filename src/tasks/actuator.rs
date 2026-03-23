@@ -1,5 +1,5 @@
 use embassy_rp::{
-    gpio::{Input, Pull},
+    gpio::{Input, Level, Output, Pull},
     peripherals::{
         PIN_5, PIN_6, PIN_8, PIN_10, PIN_15, PIN_17, PIN_18, PIN_27, PIN_28, PIO0, PIO1,
     },
@@ -7,7 +7,10 @@ use embassy_rp::{
     pio_programs::pwm::{PioPwm, PioPwmProgram},
 };
 
-use crate::{COMMAND_CHANNEL, actuators::Gripper};
+use crate::{
+    COMMAND_CHANNEL,
+    actuators::{Extension, Gripper, PioStepperProgram},
+};
 
 #[embassy_executor::task]
 pub async fn task(
@@ -37,17 +40,11 @@ pub async fn task(
     // let mut servo2 = Servo::new(pwm02);
     let mut gripper = Gripper::new(pwm02);
 
-    // let prg1 = PioStepperProgram::new(&mut common1);
-
-    let mut btnin = Input::new(btn, Pull::Up);
-
-    // let dir1out = Output::new(stp1dir, Level::Low);
-    // let dir2out = Output::new(stp2dir, Level::Low);
-    // let dir3out = Output::new(stp3dir, Level::Low);
+    let prg1 = PioStepperProgram::new(&mut common1);
 
     // let mut stepper1 = Stepper::new(&mut common1, sm10, stp1stp, dir1out, &prg1);
     // let mut stepper2 = Stepper::new(&mut common1, sm11, stp2stp, dir2out, &prg1);
-    // let mut stepper3 = Stepper::new(&mut common1, sm12, stp3stp, dir3out, &prg1);
+    let mut extension = Extension::new(&mut common1, sm12, stp3stp, stp3dir, btn, &prg1);
 
     // servo1.start();
     // servo2.start();
@@ -56,10 +53,10 @@ pub async fn task(
     //     stepper3.step(10).await;
     // })()).await;
 
-    log::info!("Homing");
-
     // Home
+    log::info!("Homing");
     gripper.close().await;
+    extension.home().await;
 
     loop {
         let cmd = COMMAND_CHANNEL.wait().await;
@@ -75,9 +72,9 @@ pub async fn task(
         //     stepper1.drive(cmd.stepper1).await;
         // }
 
-        // if cmd.stepper2 != 0 {
-        //     // log::info!("{}", cmd.stepper2);
-        //     stepper2.drive(cmd.stepper2).await;
+        // if cmd.extension != 0 {
+        //     log::info!("{}", cmd.extension);
+        //     extension.step(cmd.extension).await;
         // }
     }
 }

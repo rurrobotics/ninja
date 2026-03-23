@@ -43,14 +43,14 @@ async fn main(spawner: Spawner) {
     let _gp12 = Output::new(p.PIN_12, Level::High);
     let _gp3 = Output::new(p.PIN_3, Level::High);
     let _gp20 = Output::new(p.PIN_20, Level::High);
-
+    
     let fw = include_bytes!("../firmware/43439A0.bin");
     let clm = include_bytes!("../firmware/43439A0_clm.bin");
 
     let pwr = Output::new(p.PIN_23, Level::Low);
     let cs = Output::new(p.PIN_25, Level::High);
     let mut pio0 = Pio::new(p.PIO0, Irqs);
-    let mut pio1 = Pio::new(p.PIO1, Irqs);
+    let pio1 = Pio::new(p.PIO1, Irqs);
     let spi = PioSpi::new(
         &mut pio0.common,
         pio0.sm0,

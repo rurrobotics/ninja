@@ -20,9 +20,11 @@ pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
 
-pub const STEPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1000);
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 250;
 pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
+
+pub const EXTENSION_MAX_STEP: i32 = 130;
+pub const EXTENSION_HOME_WAIT: u64 = 100;
 
 pub const GRIPPER_MIN_PULSE: CoreDuration = CoreDuration::from_micros(320);
 pub const GRIPPER_MAX_PULSE: CoreDuration = CoreDuration::from_micros(1200);

@@ -1,56 +1,35 @@
-use core::f64::consts::PI;
 use embassy_rp::{
     Peri,
-    gpio::Output,
-    pio::{
-        Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine,
-        program::pio_asm,
-    },
+    gpio::{Input, Level, Output, Pin, Pull},
+    pio::{Common, Config, Direction, Instance, PioPin, StateMachine},
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
+use embassy_time::Timer;
 
-use crate::config::{STEPPER_DEFAULT_FREQUENCY, STEPPER_STEPS_PER_REVOLUTION, WHEEL_DIAMETER};
+use crate::{
+    actuators::{INSTRUCTION_COUNT, PioStepperProgram},
+    config::{EXTENSION_HOME_WAIT, EXTENSION_MAX_STEP, STEPPER_DEFAULT_FREQUENCY},
+};
 
-pub const INSTRUCTION_COUNT: u32 = 32 + 32 + 1;
-
-pub struct PioStepperProgram<'a, PIO: Instance> {
-    pub prg: LoadedProgram<'a, PIO>,
-}
-
-impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
-    pub fn new(common: &mut Common<'a, PIO>) -> Self {
-        let prg = pio_asm!(
-            ".wrap_target",
-            "pull block",
-            "out x, 32",
-            "loop:",
-            "    set pins, 1  [31]",
-            "    set pins, 0  [31]",
-            "    jmp x-- loop",
-            ".wrap"
-        );
-
-        let prg = common.load_program(&prg.program);
-
-        Self { prg }
-    }
-}
-
-pub struct Stepper<'d, T: Instance, const SM: usize> {
+pub struct Extension<'d, T: Instance, const SM: usize> {
     // irq: Irq<'d, T, SM>,
     sm: StateMachine<'d, T, SM>,
     dir: Output<'d>,
+    home: Input<'d>,
 }
 
-impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
+impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
     pub fn new(
         pio: &mut Common<'d, T>,
         mut sm: StateMachine<'d, T, SM>,
         // irq: Irq<'d, T, SM>,
         stp: Peri<'d, impl PioPin>,
-        dir: Output<'d>,
+        dir: Peri<'d, impl Pin>,
+        home: Peri<'d, impl Pin>,
         program: &PioStepperProgram<'d, T>,
     ) -> Self {
+        let dir = Output::new(dir, Level::Low);
+        let home = Input::new(home, Pull::Up);
         let stp = pio.make_pio_pin(stp);
         sm.set_pin_dirs(Direction::Out, &[&stp]);
 
@@ -63,11 +42,11 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         cfg.use_program(&program.prg, &[]);
         sm.set_config(&cfg);
         sm.set_enable(true);
-        Self { sm, dir }
+
+        Self { sm, dir, home }
     }
 
     pub fn set_frequency(&mut self, freq: u32) {
-        // TODO: Magic value copied from 4 pin stepper, inspect this
         let clock_divider = calculate_pio_clock_divider(freq * INSTRUCTION_COUNT);
         let divider_f32 = clock_divider.to_num::<f32>();
         assert!(divider_f32 <= 65536.0, "clkdiv must be <= 65536");
@@ -77,7 +56,7 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         self.sm.clkdiv_restart();
     }
 
-    pub async fn step(&mut self, steps: i32) {
+    async fn step(&mut self, steps: i32) {
         let steps = match steps >= 0 {
             true => {
                 self.dir.set_high();
@@ -92,17 +71,21 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         self.sm.tx().wait_push(steps as u32).await;
     }
 
-    pub async fn drive(&mut self, distance: i32) {
-        self.step(libm::round(
-            STEPPER_STEPS_PER_REVOLUTION as f64 * distance as f64 / WHEEL_DIAMETER as f64 / PI,
-        ) as i32)
-            .await;
-    }
-
     pub async fn wait(&mut self) {
         // TODO: Fix this
         while !self.sm.tx().empty() {
             embassy_time::Timer::after_micros(10).await;
+        }
+    }
+
+    pub async fn forward(&mut self) {
+        self.step(EXTENSION_MAX_STEP).await;
+    }
+
+    pub async fn home(&mut self) {
+        while self.home.is_high() {
+            self.step(-1).await;
+            Timer::after_millis(EXTENSION_HOME_WAIT).await;
         }
     }
 }

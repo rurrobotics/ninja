@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct RequestPacket {
     pub stepper1: i32,
     pub stepper2: i32,
-    pub stepper3: i32,
+    pub extension: i32,
     pub servo1: Option<u64>,
 }
 
