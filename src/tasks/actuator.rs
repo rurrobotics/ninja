@@ -7,7 +7,7 @@ use embassy_rp::{
     pio_programs::pwm::{PioPwm, PioPwmProgram},
 };
 
-use crate::{COMMAND_CHANNEL, actuators::Gripper, config::GRIPPER_ACTUATE_TIME};
+use crate::{COMMAND_CHANNEL, actuators::Gripper};
 
 #[embassy_executor::task]
 pub async fn task(
