@@ -113,6 +113,7 @@ async fn main(spawner: Spawner) {
         pio1.sm0,
         pio1.sm1,
         pio1.sm2,
+        p.PIN_8,
         p.PIN_5,
         p.PIN_6,
         p.PIN_28,

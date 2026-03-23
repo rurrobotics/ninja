@@ -1,8 +1,8 @@
 use core::ffi::CStr;
 
+use core::time::Duration as CoreDuration;
 use cyw43::PowerManagementMode;
 use embassy_time::Duration;
-use core::time::Duration as CoreDuration;
 
 pub const NAME: &CStr = unsafe {
     CStr::from_bytes_with_nul_unchecked(concat!(env!("CARGO_PKG_NAME"), "\0").as_bytes())
@@ -20,14 +20,20 @@ pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
 
-pub const SERVO_MIN_PULSE: CoreDuration = CoreDuration::from_micros(1000);
-pub const SERVO_MAX_PULSE: CoreDuration = CoreDuration::from_micros(2000);
-pub const SERVO_MAX_DEGREE_ROTATION: u64 = 180;
-pub const SERVO_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(20000);
-
 pub const STEPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1000);
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 250;
 pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
+
+pub const GRIPPER_MIN_PULSE: CoreDuration = CoreDuration::from_micros(320);
+pub const GRIPPER_MAX_PULSE: CoreDuration = CoreDuration::from_micros(1200);
+pub const GRIPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1786);
+pub const GRIPPER_MAX_DEGREE_ROTATION: u64 = 180;
+pub const GRIPPER_MIN_ANGLE: u64 = 27;
+pub const GRIPPER_MAX_ANGLE: u64 = 135;
+// 0.04s per 60, 0.005s margin
+pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
+    Duration::from_millis(40 + 5).as_nanos() * (GRIPPER_MAX_ANGLE - GRIPPER_MIN_ANGLE) / 60,
+);
 
 pub const WHEEL_DIAMETER: i32 = 56;
 pub const WHEEL_DISTANCE: i32 = 131;

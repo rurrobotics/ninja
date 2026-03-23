@@ -6,7 +6,6 @@ pub struct RequestPacket {
     pub stepper2: i32,
     pub stepper3: i32,
     pub servo1: Option<u64>,
-    pub servo2: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

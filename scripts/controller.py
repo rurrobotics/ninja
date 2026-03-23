@@ -24,7 +24,7 @@ def varint_u64(value):
     result.append(value & 0x7F)
     return result
 
-def create_request_packet(stepper1, stepper2, stepper3, servo1=None, servo2=None):
+def create_request_packet(stepper1, stepper2, stepper3, servo1=None):
     data = bytearray()
     data.extend(varint_i32(stepper1))
     data.extend(varint_i32(stepper2))
@@ -34,35 +34,28 @@ def create_request_packet(stepper1, stepper2, stepper3, servo1=None, servo2=None
     if servo1 is not None:
         data.extend(varint_u64(servo1))
     
-    data.append(0x01 if servo2 is not None else 0x00)
-    if servo2 is not None:
-        data.extend(varint_u64(servo2))
+    data.append(0x01 if None is not None else 0x00)
+    if None is not None:
+        data.extend(varint_u64(None))
     
     return bytes(data)
 
 def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
-    packets = [
-        [300, 200],
-        [-400, -400],
-        [0, -200],
-        [-200, -100],
-    ]
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((HOST, PORT))
         print("Connected!")
 
-        for packet in packets:
-            packet = create_request_packet(packet[0], packet[1], 0)
+        while True:
+            packet = create_request_packet(0, 0, 0)
             print(f"Sending: {packet.hex()}")
             sock.sendall(packet)
 
             response = sock.recv(1024)
             print(f"Received: {response.hex()}")
             print(f"Response length: {len(response)} bytes")
-            input()
 
 
 if __name__ == "__main__":
