@@ -49,7 +49,7 @@ pub async fn task(
     // Home
     log::info!("Homing");
     gripper.close().await;
-    extension.home().await;
+    extension.home(&mut common1, &prg1).await;
 
     loop {
         let cmd = COMMAND_CHANNEL.wait().await;

@@ -2,7 +2,8 @@ use embassy_rp::{
     Peri,
     gpio::{Level, Output, Pin},
     pio::{
-        Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine, program::pio_asm,
+        self, Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine,
+        program::pio_asm,
     },
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
@@ -36,8 +37,9 @@ impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
 
 pub struct Stepper<'d, T: Instance, const SM: usize> {
     // irq: Irq<'d, T, SM>,
-    sm: StateMachine<'d, T, SM>,
-    dir: Output<'d>,
+    pub sm: StateMachine<'d, T, SM>,
+    pub dir: Output<'d>,
+    pub stp: pio::Pin<'d, T>,
 }
 
 impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
@@ -62,7 +64,7 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         cfg.use_program(&program.prg, &[]);
         sm.set_config(&cfg);
         sm.set_enable(true);
-        Self { sm, dir }
+        Self { sm, dir, stp }
     }
 
     pub fn set_frequency(&mut self, freq: u32) {

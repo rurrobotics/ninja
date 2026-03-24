@@ -1,18 +1,22 @@
 use embassy_rp::{
     Peri,
-    gpio::{Input, Pin, Pull},
-    pio::{Common, Instance, PioPin, StateMachine},
+    gpio::{Pin, Pull},
+    pio::{Common, Config, Direction, Instance, PioPin, StateMachine, program::pio_asm},
+    pio_programs::clock_divider::calculate_pio_clock_divider,
 };
-use embassy_time::Timer;
 
 use crate::{
-    actuators::{PioStepperProgram, stepper::Stepper},
-    config::{EXTENSION_HOME_OFFSET, EXTENSION_HOME_WAIT, EXTENSION_PULL_STEP, EXTENSION_PUSH_STEP},
+    actuators::{
+        PioStepperProgram,
+        stepper::{INSTRUCTION_COUNT, Stepper},
+    },
+    config::{EXTENSION_HOME_OFFSET, EXTENSION_PULL_OFFSET, STEPPER_DEFAULT_FREQUENCY},
 };
 
 pub struct Extension<'d, T: Instance, const SM: usize> {
     stepper: Stepper<'d, T, SM>,
-    home: Input<'d>,
+    home: embassy_rp::pio::Pin<'d, T>,
+    max_steps: i32,
 }
 
 impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
@@ -22,31 +26,71 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         // irq: Irq<'d, T, SM>,
         stp: Peri<'d, impl PioPin>,
         dir: Peri<'d, impl Pin>,
-        home: Peri<'d, impl Pin>,
+        home: Peri<'d, impl PioPin>,
         program: &PioStepperProgram<'d, T>,
     ) -> Self {
-        let home = Input::new(home, Pull::Up);
+        let mut home = pio.make_pio_pin(home);
+        home.set_pull(Pull::Up);
 
         Self {
             stepper: Stepper::new(pio, sm, stp, dir, program),
             home,
+            max_steps: 0,
         }
     }
 
     pub async fn push(&mut self) {
-        self.stepper.step(EXTENSION_PUSH_STEP).await;
+        self.stepper.step(self.max_steps).await;
     }
 
     pub async fn pull(&mut self) {
-        self.stepper.step(EXTENSION_PULL_STEP).await;
+        self.stepper
+            .step(EXTENSION_PULL_OFFSET - self.max_steps)
+            .await;
     }
+    pub async fn home(&mut self, pio: &mut Common<'d, T>, stepper_prg: &PioStepperProgram<'d, T>) {
+        self.stepper.sm.set_enable(false);
+        let homing_prg = pio_asm!(
+            "    set x, 0",
+            "    jmp pin loop",
+            "    jmp end",
+            "loop:",
+            "    set pins, 1 [31]",
+            "    set pins, 0 [31]",
+            "    jmp x-- decr",
+            "decr:",
+            "    jmp pin loop",
+            "end:",
+            "    in x, 32",
+            "    push block",
+        );
+        let homing_prg = pio.load_program(&homing_prg.program);
+        let mut cfg = Config::default();
+        cfg.set_set_pins(&[&self.stepper.stp]);
+        cfg.set_jmp_pin(&self.home);
+        cfg.clock_divider = calculate_pio_clock_divider(STEPPER_DEFAULT_FREQUENCY * 66);
+        cfg.use_program(&homing_prg, &[]);
+        self.stepper.sm.set_config(&cfg);
+        self.stepper
+            .sm
+            .set_pin_dirs(Direction::Out, &[&self.stepper.stp]);
+        self.stepper.sm.set_pin_dirs(Direction::In, &[&self.home]);
+        self.stepper.sm.set_enable(true);
 
-    pub async fn home(&mut self) {
-        // TODO: Fix this
-        while self.home.is_high() {
-            self.stepper.step(-1).await;
-            Timer::after_millis(EXTENSION_HOME_WAIT).await;
-        }
+        self.max_steps = (u32::MAX - self.stepper.sm.rx().wait_pull().await + 1) as i32 - EXTENSION_HOME_OFFSET;
+
+        self.stepper.sm.set_enable(false);
+        let mut cfg = Config::default();
+        cfg.set_set_pins(&[&self.stepper.stp]);
+        cfg.clock_divider =
+            calculate_pio_clock_divider(STEPPER_DEFAULT_FREQUENCY * INSTRUCTION_COUNT);
+        cfg.use_program(&stepper_prg.prg, &[]);
+        self.stepper
+            .sm
+            .set_pin_dirs(Direction::Out, &[&self.stepper.stp]);
+        self.stepper.sm.set_config(&cfg);
+        self.stepper.sm.set_enable(true);
+
         self.stepper.step(EXTENSION_HOME_OFFSET).await;
     }
 }
