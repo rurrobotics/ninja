@@ -64,6 +64,7 @@ def main():
                 print(f"Received: {response.hex()}")
                 print(f"Response length: {len(response)} bytes")
 
+                input()
 
 if __name__ == "__main__":
     main()
