@@ -10,9 +10,11 @@ GND  - GND  |         |  GND - GND
 DIR  - GP5  |         | GP28 - DIR
 STEP - GP6  |         | GP27 - STEP
             |         |
-Servo 1:    |         | Stepper 3:
-PWM  - GP10 |   PICO  |      - 7V4
-3V3  - GP12 |    2W   |  GND - GND
+HOME - GP8  |         |
+            |   PICO  |
+Servo 1:    |    2W   | Stepper 3:
+PWM  - GP10 |         |      - 7V4
+3V3  - GP12 |         |  GND - GND
 GND  - GND  |         | GP20 - 3V3
             |         | GP18 - DIR
 Servo 2:    |         | GP17 - STEP
@@ -29,4 +31,4 @@ Always on pins: `GP3`, `GP12`, `GP20`.
 - Blocking motor calls (irq?)
 - Accelerate/Decelerate
 - Parallel motor calls
-- Homing stutters
+- ~~Homing stutters~~
