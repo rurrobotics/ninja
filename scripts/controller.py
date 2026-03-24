@@ -44,10 +44,10 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        0,
-        2,
-        1,
-        3
+        [0],
+        [2],
+        [1],
+        [3],
     ]
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -55,16 +55,14 @@ def main():
         print("Connected!")
 
         while True:
-            for packet in packets:
-                packet = bytearray([packet])
-                # packet = create_request_packet(0, 0, int(input("Stepper: ")))
+            for p in packets:
+                packet = bytearray(p)
                 print(f"Sending: {packet.hex()}")
                 sock.sendall(packet)
 
                 response = sock.recv(1024)
                 print(f"Received: {response.hex()}")
                 print(f"Response length: {len(response)} bytes")
-                input()
 
 
 if __name__ == "__main__":

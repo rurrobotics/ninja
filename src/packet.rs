@@ -5,7 +5,9 @@ pub enum RequestPacket {
     GripperOpen,
     GripperClose,
     ExtensionPush,
-    ExtensionPull
+    ExtensionPull,
+    LeftStep(i32),
+    RightStep(i32),
 }
 
 #[derive(Debug, Serialize, Deserialize)]

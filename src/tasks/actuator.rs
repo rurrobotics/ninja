@@ -8,7 +8,7 @@ use embassy_rp::{
 
 use crate::{
     COMMAND_CHANNEL,
-    actuators::{Extension, Gripper, PioStepperProgram},
+    actuators::{Extension, Gripper, PioStepperProgram, Stepper},
     packet::RequestPacket,
 };
 
@@ -41,8 +41,8 @@ pub async fn task(
 
     let prg1 = PioStepperProgram::new(&mut common1);
 
-    // let mut stepper1 = Stepper::new(&mut common1, sm10, stp1stp, dir1out, &prg1);
-    // let mut stepper2 = Stepper::new(&mut common1, sm11, stp2stp, dir2out, &prg1);
+    let mut stepper1 = Stepper::new(&mut common1, sm10, stp1stp, stp1dir, &prg1);
+    let mut stepper2 = Stepper::new(&mut common1, sm11, stp2stp, stp2dir, &prg1);
     let mut extension = Extension::new(&mut common1, sm12, stp3stp, stp3dir, btn, &prg1);
 
     // Home
@@ -60,6 +60,8 @@ pub async fn task(
             RequestPacket::GripperClose => gripper.close().await,
             RequestPacket::ExtensionPush => extension.push().await,
             RequestPacket::ExtensionPull => extension.pull().await,
+            RequestPacket::LeftStep(s) => stepper1.step(s).await,
+            RequestPacket::RightStep(s) => stepper2.step(s).await,
         };
     }
 }
