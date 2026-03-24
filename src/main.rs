@@ -124,6 +124,7 @@ async fn main(spawner: Spawner) {
 
     log::info!("{:?}", stack.config_v4());
 
+    control.gpio_set(0, true).await;
     spawner.must_spawn(tasks::receiver(control, stack));
 
     core::future::pending::<()>().await;

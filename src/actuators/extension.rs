@@ -47,5 +47,6 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
             self.stepper.step(-1).await;
             Timer::after_millis(EXTENSION_HOME_WAIT).await;
         }
+        self.stepper.step(1).await;
     }
 }
