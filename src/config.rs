@@ -20,9 +20,10 @@ pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
 
-pub const STEPPER_DEFAULT_FREQUENCY: u32 = 500;
+pub const STEPPER_DEFAULT_FREQUENCY: u32 = 1000;
 pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 
+pub const EXTENSION_HOME_FREQUENCY: u32 = 200;
 pub const EXTENSION_HOME_OFFSET: i32 = 4;
 pub const EXTENSION_PULL_OFFSET: i32 = 2;
 
