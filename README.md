@@ -28,7 +28,7 @@ GND  - GND  |         | 7V4 - 7V4
 Always on pins: `GP3`, `GP12`, `GP20`.
 
 ## TODO
-- Blocking motor calls (irq?)
+- ~~Blocking motor calls (irq?)~~
 - Accelerate/Decelerate
 - Parallel motor calls
 - ~~Homing stutters~~

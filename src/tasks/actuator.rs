@@ -2,10 +2,9 @@ use embassy_rp::{
     peripherals::{
         PIN_5, PIN_6, PIN_8, PIN_10, PIN_15, PIN_17, PIN_18, PIN_27, PIN_28, PIO0, PIO1,
     },
-    pio::{Common, StateMachine},
+    pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
 };
-use embassy_time::Timer;
 
 use crate::{
     COMMAND_CHANNEL,
@@ -19,9 +18,9 @@ pub async fn task(
     mut common1: Common<'static, PIO1>,
     sm01: StateMachine<'static, PIO0, 1>,
     sm02: StateMachine<'static, PIO0, 2>,
-    sm10: StateMachine<'static, PIO1, 0>,
-    sm11: StateMachine<'static, PIO1, 1>,
-    sm12: StateMachine<'static, PIO1, 2>,
+    sm_irq10: (StateMachine<'static, PIO1, 0>, Irq<'static, PIO1, 0>),
+    sm_irq11: (StateMachine<'static, PIO1, 1>, Irq<'static, PIO1, 1>),
+    sm_irq12: (StateMachine<'static, PIO1, 2>, Irq<'static, PIO1,2>),
     btn: embassy_rp::Peri<'static, PIN_8>,
     stp1dir: embassy_rp::Peri<'static, PIN_5>,
     stp1stp: embassy_rp::Peri<'static, PIN_6>,
@@ -42,9 +41,31 @@ pub async fn task(
 
     let prg1 = PioStepperProgram::new(&mut common1);
 
-    let mut stepper1 = Stepper::new(&mut common1, sm10, stp1stp, stp1dir, &prg1);
-    let mut stepper2 = Stepper::new(&mut common1, sm11, stp2stp, stp2dir, &prg1);
-    let mut extension = Extension::new(&mut common1, sm12, stp3stp, stp3dir, btn, &prg1);
+    let mut stepper1 = Stepper::new(
+        &mut common1,
+        sm_irq10.0,
+        sm_irq10.1,
+        stp1stp,
+        stp1dir,
+        &prg1,
+    );
+    let mut stepper2 = Stepper::new(
+        &mut common1,
+        sm_irq11.0,
+        sm_irq11.1,
+        stp2stp,
+        stp2dir,
+        &prg1,
+    );
+    let mut extension = Extension::new(
+        &mut common1,
+        sm_irq12.0,
+        sm_irq12.1,
+        stp3stp,
+        stp3dir,
+        btn,
+        &prg1,
+    );
 
     // Home
     log::info!("Homing");
@@ -65,9 +86,7 @@ pub async fn task(
             RequestPacket::RightStep(s) => stepper2.step(s).await,
             RequestPacket::TestExtension => loop {
                 extension.push().await;
-                Timer::after_millis(700).await;
                 extension.pull().await;
-                Timer::after_millis(700).await;
             },
         };
     }

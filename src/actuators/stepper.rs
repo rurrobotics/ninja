@@ -2,8 +2,7 @@ use embassy_rp::{
     Peri,
     gpio::{Level, Output, Pin},
     pio::{
-        self, Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine,
-        program::pio_asm,
+        self, Common, Config, Direction, Instance, Irq, LoadedProgram, PioPin, StateMachine, program::pio_asm
     },
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
@@ -26,6 +25,7 @@ impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
             "    set pins, 1  [31]",
             "    set pins, 0  [31]",
             "    jmp x-- loop",
+            "    irq 0 rel",
             ".wrap"
         );
 
@@ -36,7 +36,7 @@ impl<'a, PIO: Instance> PioStepperProgram<'a, PIO> {
 }
 
 pub struct Stepper<'d, T: Instance, const SM: usize> {
-    // irq: Irq<'d, T, SM>,
+    irq: Irq<'d, T, SM>,
     pub sm: StateMachine<'d, T, SM>,
     pub dir: Output<'d>,
     pub stp: pio::Pin<'d, T>,
@@ -46,7 +46,7 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
     pub fn new(
         pio: &mut Common<'d, T>,
         mut sm: StateMachine<'d, T, SM>,
-        // irq: Irq<'d, T, SM>,
+        irq: Irq<'d, T, SM>,
         stp: Peri<'d, impl PioPin>,
         dir: Peri<'d, impl Pin>,
         program: &PioStepperProgram<'d, T>,
@@ -64,7 +64,7 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         cfg.use_program(&program.prg, &[]);
         sm.set_config(&cfg);
         sm.set_enable(true);
-        Self { sm, dir, stp }
+        Self { irq, sm, dir, stp }
     }
 
     pub fn set_frequency(&mut self, freq: u32) {
@@ -93,9 +93,6 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
     }
 
     pub async fn wait(&mut self) {
-        // TODO: Fix this
-        while !self.sm.tx().empty() {
-            embassy_time::Timer::after_micros(10).await;
-        }
+        self.irq.wait().await;
     }
 }

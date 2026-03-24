@@ -1,7 +1,7 @@
 use embassy_rp::{
     Peri,
     gpio::{Pin, Pull},
-    pio::{Common, Config, Direction, Instance, PioPin, StateMachine, program::pio_asm},
+    pio::{Common, Config, Direction, Instance, Irq, PioPin, StateMachine, program::pio_asm},
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
 
@@ -23,7 +23,7 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
     pub fn new(
         pio: &mut Common<'d, T>,
         sm: StateMachine<'d, T, SM>,
-        // irq: Irq<'d, T, SM>,
+        irq: Irq<'d, T, SM>,
         stp: Peri<'d, impl PioPin>,
         dir: Peri<'d, impl Pin>,
         home: Peri<'d, impl PioPin>,
@@ -33,7 +33,7 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         home.set_pull(Pull::Up);
 
         Self {
-            stepper: Stepper::new(pio, sm, stp, dir, program),
+            stepper: Stepper::new(pio, sm, irq, stp, dir, program),
             home,
             max_steps: 0,
         }
@@ -41,12 +41,14 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
 
     pub async fn push(&mut self) {
         self.stepper.step(self.max_steps).await;
+        self.stepper.wait().await;
     }
 
     pub async fn pull(&mut self) {
         self.stepper
             .step(EXTENSION_PULL_OFFSET - self.max_steps)
             .await;
+        self.stepper.wait().await;
     }
     pub async fn home(&mut self, pio: &mut Common<'d, T>, stepper_prg: &PioStepperProgram<'d, T>) {
         self.stepper.sm.set_enable(false);
