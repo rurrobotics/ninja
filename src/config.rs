@@ -24,7 +24,8 @@ pub const STEPPER_DEFAULT_FREQUENCY: u32 = 500;
 pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 
 pub const EXTENSION_MAX_STEP: i32 = 130;
-pub const EXTENSION_HOME_WAIT: u64 = 40;
+pub const EXTENSION_HOME_WAIT: u64 = 250;
+pub const EXTENSION_HOME_OFFSET: i32 = 4;
 
 pub const SERVO_DEFAULT_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1000);
 pub const SERVO_DEFAULT_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(2000);
