@@ -5,6 +5,7 @@ use embassy_rp::{
     pio::{Common, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
 };
+use embassy_time::Timer;
 
 use crate::{
     COMMAND_CHANNEL,
@@ -62,6 +63,12 @@ pub async fn task(
             RequestPacket::ExtensionPull => extension.pull().await,
             RequestPacket::LeftStep(s) => stepper1.step(s).await,
             RequestPacket::RightStep(s) => stepper2.step(s).await,
+            RequestPacket::TestExtension => loop {
+                extension.push().await;
+                Timer::after_millis(700).await;
+                extension.pull().await;
+                Timer::after_millis(700).await;
+            },
         };
     }
 }

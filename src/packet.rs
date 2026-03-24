@@ -8,6 +8,7 @@ pub enum RequestPacket {
     ExtensionPull,
     LeftStep(i32),
     RightStep(i32),
+    TestExtension,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

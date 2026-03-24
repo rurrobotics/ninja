@@ -7,7 +7,7 @@ use embassy_time::Timer;
 
 use crate::{
     actuators::{PioStepperProgram, stepper::Stepper},
-    config::{EXTENSION_HOME_OFFSET, EXTENSION_HOME_WAIT, EXTENSION_MAX_STEP},
+    config::{EXTENSION_HOME_OFFSET, EXTENSION_HOME_WAIT, EXTENSION_PULL_STEP, EXTENSION_PUSH_STEP},
 };
 
 pub struct Extension<'d, T: Instance, const SM: usize> {
@@ -34,11 +34,11 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
     }
 
     pub async fn push(&mut self) {
-        self.stepper.step(EXTENSION_MAX_STEP).await;
+        self.stepper.step(EXTENSION_PUSH_STEP).await;
     }
 
     pub async fn pull(&mut self) {
-        self.stepper.step(-EXTENSION_MAX_STEP).await;
+        self.stepper.step(EXTENSION_PULL_STEP).await;
     }
 
     pub async fn home(&mut self) {

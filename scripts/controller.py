@@ -44,10 +44,10 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        [0],
-        [2],
-        [1],
-        [3],
+        [6],
+        # [2],
+        # [1],
+        # [3],
     ]
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:

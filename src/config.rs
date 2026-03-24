@@ -23,9 +23,10 @@ pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 500;
 pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 
-pub const EXTENSION_MAX_STEP: i32 = 130;
-pub const EXTENSION_HOME_WAIT: u64 = 250;
+pub const EXTENSION_PUSH_STEP: i32 = 130 * 2;
+pub const EXTENSION_PULL_STEP: i32 = 2 - EXTENSION_PUSH_STEP;
 pub const EXTENSION_HOME_OFFSET: i32 = 4;
+pub const EXTENSION_HOME_WAIT: u64 = 20;
 
 pub const SERVO_DEFAULT_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1000);
 pub const SERVO_DEFAULT_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(2000);
