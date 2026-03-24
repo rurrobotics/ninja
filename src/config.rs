@@ -26,10 +26,14 @@ pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 pub const EXTENSION_MAX_STEP: i32 = 130;
 pub const EXTENSION_HOME_WAIT: u64 = 40;
 
-pub const GRIPPER_MIN_PULSE: CoreDuration = CoreDuration::from_micros(320);
-pub const GRIPPER_MAX_PULSE: CoreDuration = CoreDuration::from_micros(1200);
+pub const SERVO_DEFAULT_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1000);
+pub const SERVO_DEFAULT_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(2000);
+pub const SERVO_DEFAULT_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(20000);
+pub const SERVO_MAX_DEGREE_ROTATION: u64 = 180;
+
+pub const GRIPPER_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(320);
+pub const GRIPPER_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1200);
 pub const GRIPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1786);
-pub const GRIPPER_MAX_DEGREE_ROTATION: u64 = 180;
 pub const GRIPPER_MIN_ANGLE: u64 = 27;
 pub const GRIPPER_MAX_ANGLE: u64 = 135;
 // 0.04s per 60, 0.005s margin

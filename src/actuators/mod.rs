@@ -1,9 +1,9 @@
-// mod servo;
 mod extension;
 mod gripper;
+mod servo;
 mod stepper;
 
-// pub use servo::Servo;
 pub use extension::Extension;
 pub use gripper::Gripper;
-pub use stepper::{PioStepperProgram, INSTRUCTION_COUNT};
+pub use servo::{Servo, ServoBuilder};
+pub use stepper::{PioStepperProgram, Stepper};

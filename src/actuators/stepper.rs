@@ -1,15 +1,13 @@
-use core::f64::consts::PI;
 use embassy_rp::{
     Peri,
-    gpio::Output,
+    gpio::{Level, Output, Pin},
     pio::{
-        Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine,
-        program::pio_asm,
+        Common, Config, Direction, Instance, LoadedProgram, PioPin, StateMachine, program::pio_asm,
     },
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
 
-use crate::config::{STEPPER_DEFAULT_FREQUENCY, STEPPER_STEPS_PER_REVOLUTION, WHEEL_DIAMETER};
+use crate::config::STEPPER_DEFAULT_FREQUENCY;
 
 pub const INSTRUCTION_COUNT: u32 = 32 + 32 + 1;
 
@@ -48,10 +46,11 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         mut sm: StateMachine<'d, T, SM>,
         // irq: Irq<'d, T, SM>,
         stp: Peri<'d, impl PioPin>,
-        dir: Output<'d>,
+        dir: Peri<'d, impl Pin>,
         program: &PioStepperProgram<'d, T>,
     ) -> Self {
         let stp = pio.make_pio_pin(stp);
+        let dir = Output::new(dir, Level::Low);
         sm.set_pin_dirs(Direction::Out, &[&stp]);
 
         let mut cfg = Config::default();
@@ -67,7 +66,6 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
     }
 
     pub fn set_frequency(&mut self, freq: u32) {
-        // TODO: Magic value copied from 4 pin stepper, inspect this
         let clock_divider = calculate_pio_clock_divider(freq * INSTRUCTION_COUNT);
         let divider_f32 = clock_divider.to_num::<f32>();
         assert!(divider_f32 <= 65536.0, "clkdiv must be <= 65536");
@@ -90,13 +88,6 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         };
 
         self.sm.tx().wait_push(steps as u32).await;
-    }
-
-    pub async fn drive(&mut self, distance: i32) {
-        self.step(libm::round(
-            STEPPER_STEPS_PER_REVOLUTION as f64 * distance as f64 / WHEEL_DIAMETER as f64 / PI,
-        ) as i32)
-            .await;
     }
 
     pub async fn wait(&mut self) {

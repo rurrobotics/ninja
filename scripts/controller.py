@@ -43,19 +43,28 @@ def create_request_packet(stepper1, stepper2, stepper3, servo1=None):
 def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
+    packets = [
+        0,
+        2,
+        1,
+        3
+    ]
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((HOST, PORT))
         print("Connected!")
 
         while True:
-            packet = create_request_packet(0, 0, int(input("Stepper: ")))
-            print(f"Sending: {packet.hex()}")
-            sock.sendall(packet)
+            for packet in packets:
+                packet = bytearray([packet])
+                # packet = create_request_packet(0, 0, int(input("Stepper: ")))
+                print(f"Sending: {packet.hex()}")
+                sock.sendall(packet)
 
-            response = sock.recv(1024)
-            print(f"Received: {response.hex()}")
-            print(f"Response length: {len(response)} bytes")
+                response = sock.recv(1024)
+                print(f"Received: {response.hex()}")
+                print(f"Response length: {len(response)} bytes")
+                input()
 
 
 if __name__ == "__main__":

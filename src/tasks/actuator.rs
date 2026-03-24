@@ -1,5 +1,4 @@
 use embassy_rp::{
-    gpio::{Input, Level, Output, Pull},
     peripherals::{
         PIN_5, PIN_6, PIN_8, PIN_10, PIN_15, PIN_17, PIN_18, PIN_27, PIN_28, PIO0, PIO1,
     },
@@ -10,6 +9,7 @@ use embassy_rp::{
 use crate::{
     COMMAND_CHANNEL,
     actuators::{Extension, Gripper, PioStepperProgram},
+    packet::RequestPacket,
 };
 
 #[embassy_executor::task]
@@ -36,8 +36,7 @@ pub async fn task(
     // let pwm01 = PioPwm::new(&mut common0, sm01, srv1pwm, &prg0);
     let pwm02 = PioPwm::new(&mut common0, sm02, srv2pwm, &prg0);
 
-    // let mut servo1 = Servo::new(pwm01);
-    // let mut servo2 = Servo::new(pwm02);
+    // let mut servo1 = ServoBuilder::new(pwm01).build();
     let mut gripper = Gripper::new(pwm02);
 
     let prg1 = PioStepperProgram::new(&mut common1);
@@ -45,13 +44,6 @@ pub async fn task(
     // let mut stepper1 = Stepper::new(&mut common1, sm10, stp1stp, dir1out, &prg1);
     // let mut stepper2 = Stepper::new(&mut common1, sm11, stp2stp, dir2out, &prg1);
     let mut extension = Extension::new(&mut common1, sm12, stp3stp, stp3dir, btn, &prg1);
-
-    // servo1.start();
-    // servo2.start();
-
-    // select(btnin.wait_for_low(), (|| async move {
-    //     stepper3.step(10).await;
-    // })()).await;
 
     // Home
     log::info!("Homing");
@@ -63,18 +55,11 @@ pub async fn task(
 
         log::info!("Actuator received: {:?}", cmd);
 
-        // if let Some(angle) = cmd.servo2 {
-        //     servo2.rotate(angle);
-        // }
-
-        // if cmd.stepper1 != 0 {
-        //     // log::info!("{}", cmd.stepper1);
-        //     stepper1.drive(cmd.stepper1).await;
-        // }
-
-        // if cmd.extension != 0 {
-        //     log::info!("{}", cmd.extension);
-        //     extension.step(cmd.extension).await;
-        // }
+        match cmd {
+            RequestPacket::GripperOpen => gripper.open().await,
+            RequestPacket::GripperClose => gripper.close().await,
+            RequestPacket::ExtensionPush => extension.push().await,
+            RequestPacket::ExtensionPull => extension.pull().await,
+        };
     }
 }
