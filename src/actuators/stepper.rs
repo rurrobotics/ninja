@@ -13,6 +13,7 @@ use embassy_rp::{
 
 use crate::config::{
     STEPPER_DEFAULT_ACCELERATION, STEPPER_DEFAULT_FREQUENCY, STEPPER_DEFAULT_START_DELAY,
+    STEPPER_MAX_ACCELERATION_STEPS,
 };
 
 pub struct PioStepperProgram<'a, PIO: Instance, const ACC: bool> {
@@ -208,16 +209,11 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
         let ramp_len = full_ramp_len.min(total_delays / 2);
         let cruise_steps = total_delays - 2 * ramp_len;
 
-        let mut accel = heapless::Vec::<u32, 256>::new();
+        let mut accel = heapless::Vec::<u32, STEPPER_MAX_ACCELERATION_STEPS>::new();
+        let mut decel = heapless::Vec::<u32, STEPPER_MAX_ACCELERATION_STEPS>::new();
         for i in 0..ramp_len {
-            let delay = self.start_delay - (i as u32 * self.acceleration);
-            let _ = accel.push(delay);
-        }
-
-        let mut decel = heapless::Vec::<u32, 256>::new();
-        for i in (0..ramp_len).rev() {
-            let delay = self.start_delay - (i as u32 * self.acceleration);
-            let _ = decel.push(delay);
+            let _ = accel.push(self.start_delay - (i as u32 * self.acceleration));
+            let _ = decel.push(self.start_delay - ((ramp_len - 1 - i) as u32 * self.acceleration));
         }
 
         self.sm.tx().wait_push(steps).await;

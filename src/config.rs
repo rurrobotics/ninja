@@ -23,6 +23,7 @@ pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 1000;
 pub const STEPPER_DEFAULT_START_DELAY: u32 = 100;
 pub const STEPPER_DEFAULT_ACCELERATION: u32 = 2;
+pub const STEPPER_MAX_ACCELERATION_STEPS: usize = 256;
 
 
 pub const EXTENSION_HOME_FREQUENCY: u32 = 200;
@@ -46,6 +47,6 @@ pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
 );
 
 pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 55.0;
-pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 136.5;
+pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 137.0;
 pub const DRIVETRAIN_STEPS_PER_REVOLUTION: u32 = 400;
 pub const DRIVETRAIN_FREQUENCY: u32 = 200;

@@ -60,7 +60,7 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Chann
     pub async fn drive(&mut self, distance: f64) -> i32 {
         let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
             / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps, -steps).await;
+        self.step(steps - 1, 1 - steps).await;
         steps
     }
 
@@ -68,7 +68,7 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Chann
         let distance = degrees * PI / 360.0 * DRIVETRAIN_WHEEL_DISTANCE;
         let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
             / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps, steps).await;
+        self.step(steps - 1, steps - 1).await;
         steps
     }
 }
