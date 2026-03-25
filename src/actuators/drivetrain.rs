@@ -3,40 +3,51 @@ use core::f64::consts::PI;
 use embassy_futures::join::join;
 use embassy_rp::{
     Peri,
+    dma::Channel,
     gpio::Pin,
     pio::{Common, Instance, Irq, PioPin, StateMachine},
 };
 
 use crate::{
-    actuators::{PioStepperProgram, stepper::Stepper},
+    actuators::{
+        PioStepperProgram,
+        stepper::{Stepper, WithAcc},
+    },
     config::{
         DRIVETRAIN_FREQUENCY, DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER,
         DRIVETRAIN_WHEEL_DISTANCE,
     },
 };
 
-pub struct Drivetrain<'d, T: Instance, const SM1: usize, const SM2: usize> {
-    stepper1: Stepper<'d, T, SM1>,
-    stepper2: Stepper<'d, T, SM2>,
+pub struct Drivetrain<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Channel>
+{
+    stepper1: Stepper<'d, T, SM1, WithAcc<C1>>,
+    stepper2: Stepper<'d, T, SM2, WithAcc<C2>>,
 }
 
-impl<'d, T: Instance, const SM1: usize, const SM2: usize> Drivetrain<'d, T, SM1, SM2> {
+impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Channel>
+    Drivetrain<'d, T, SM1, SM2, C1, C2>
+{
     pub fn new(
         pio: &mut Common<'d, T>,
         sm1: StateMachine<'d, T, SM1>,
         irq1: Irq<'d, T, SM1>,
         stp1: Peri<'d, impl PioPin>,
         dir1: Peri<'d, impl Pin>,
+        dma1: Peri<'d, C1>,
         sm2: StateMachine<'d, T, SM2>,
         irq2: Irq<'d, T, SM2>,
         stp2: Peri<'d, impl PioPin>,
         dir2: Peri<'d, impl Pin>,
-        program: &PioStepperProgram<'d, T>,
+        dma2: Peri<'d, C2>,
+        program: &PioStepperProgram<'d, T, true>,
     ) -> Self {
-        let mut stepper1 = Stepper::new(pio, sm1, irq1, stp1, dir1, program);
+        let mut stepper1 =
+            Stepper::<'d, T, SM1, WithAcc<C1>>::new(pio, sm1, irq1, stp1, dir1, dma1, program);
         stepper1.set_frequency(DRIVETRAIN_FREQUENCY);
 
-        let mut stepper2 = Stepper::new(pio, sm2, irq2, stp2, dir2, program);
+        let mut stepper2 =
+            Stepper::<'d, T, SM2, WithAcc<C2>>::new(pio, sm2, irq2, stp2, dir2, dma2, program);
         stepper2.set_frequency(DRIVETRAIN_FREQUENCY);
 
         Self { stepper1, stepper2 }
