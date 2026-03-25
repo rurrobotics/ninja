@@ -30,5 +30,5 @@ Always on pins: `GP3`, `GP12`, `GP20`.
 ## TODO
 - ~~Blocking motor calls (irq?)~~
 - Accelerate/Decelerate
-- Parallel motor calls
+- ~~Parallel motor calls~~
 - ~~Homing stutters~~
