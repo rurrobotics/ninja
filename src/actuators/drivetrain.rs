@@ -44,7 +44,6 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize> Drivetrain<'d, T, SM1,
 
     pub async fn step(&mut self, steps1: i32, steps2: i32) {
         join(self.stepper1.step(steps1), self.stepper2.step(steps2)).await;
-        join(self.stepper1.wait(), self.stepper2.wait()).await;
     }
 
     pub async fn drive(&mut self, distance: f64) -> i32 {

@@ -44,14 +44,12 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
 
     pub async fn push(&mut self) {
         self.stepper.step(self.max_steps).await;
-        self.stepper.wait().await;
     }
 
     pub async fn pull(&mut self) {
         self.stepper
             .step(EXTENSION_PULL_OFFSET - self.max_steps)
             .await;
-        self.stepper.wait().await;
     }
     pub async fn home(&mut self, pio: &mut Common<'d, T>, stepper_prg: &PioStepperProgram<'d, T>) {
         self.stepper.sm.set_enable(false);

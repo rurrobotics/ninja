@@ -1,8 +1,11 @@
+use core::mem::{self, MaybeUninit};
+
 use embassy_rp::{
     Peri,
     gpio::{Level, Output, Pin},
     pio::{
-        self, Common, Config, Direction, Instance, Irq, LoadedProgram, PioPin, StateMachine, program::pio_asm
+        self, Common, Config, Direction, Instance, Irq, LoadedProgram, PioPin, StateMachine,
+        program::pio_asm,
     },
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
@@ -90,9 +93,32 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM> {
         };
 
         self.sm.tx().wait_push(steps as u32).await;
-    }
-
-    pub async fn wait(&mut self) {
+        let drop = OnDrop::new(|| {
+            self.sm.clear_fifos();
+            unsafe {
+                self.sm.exec_jmp(0);
+            }
+        });
         self.irq.wait().await;
+        drop.defuse();
+    }
+}
+
+struct OnDrop<F: FnOnce()> {
+    f: MaybeUninit<F>,
+}
+impl<F: FnOnce()> OnDrop<F> {
+    pub fn new(f: F) -> Self {
+        Self {
+            f: MaybeUninit::new(f),
+        }
+    }
+    pub fn defuse(self) {
+        mem::forget(self)
+    }
+}
+impl<F: FnOnce()> Drop for OnDrop<F> {
+    fn drop(&mut self) {
+        unsafe { self.f.as_ptr().read()() }
     }
 }
