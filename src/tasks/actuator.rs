@@ -102,8 +102,8 @@ pub async fn task(
                 extension.pull().await;
                 Timer::after_secs(1).await;
                 drivetrain.drive(-100.0).await;
-                drivetrain.turn(90.0).await;
-                drivetrain.drive(100.0).await;
+                // drivetrain.turn(90.0).await;
+                drivetrain.drive(200.0).await;
             }
         };
     }
