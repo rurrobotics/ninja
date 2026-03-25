@@ -2,13 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RequestPacket {
+    Game,
     GripperOpen,
     GripperClose,
     ExtensionPush,
     ExtensionPull,
-    LeftStep(i32),
-    RightStep(i32),
+    Drive(i32),
+    Turn(i32),
     TestExtension,
+    TestRotation,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

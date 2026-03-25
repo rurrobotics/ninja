@@ -44,7 +44,7 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        [6],
+        [0],
         # [2],
         # [1],
         # [3],
@@ -57,6 +57,8 @@ def main():
         while True:
             for p in packets:
                 packet = bytearray(p)
+                if p[0] in [5, 6]:
+                    packet.extend(varint_i32(30))
                 print(f"Sending: {packet.hex()}")
                 sock.sendall(packet)
 

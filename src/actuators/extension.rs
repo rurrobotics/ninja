@@ -10,7 +10,7 @@ use crate::{
         PioStepperProgram,
         stepper::{INSTRUCTION_COUNT, Stepper},
     },
-    config::{EXTENSION_HOME_FREQUENCY, EXTENSION_HOME_OFFSET, EXTENSION_PULL_OFFSET, STEPPER_DEFAULT_FREQUENCY},
+    config::{EXTENSION_FREQUENCY, EXTENSION_HOME_FREQUENCY, EXTENSION_HOME_OFFSET, EXTENSION_PULL_OFFSET, STEPPER_DEFAULT_FREQUENCY},
 };
 
 pub struct Extension<'d, T: Instance, const SM: usize> {
@@ -32,8 +32,11 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         let mut home = pio.make_pio_pin(home);
         home.set_pull(Pull::Up);
 
+        let mut stepper = Stepper::new(pio, sm, irq, stp, dir, program);
+        stepper.set_frequency(EXTENSION_FREQUENCY);
+
         Self {
-            stepper: Stepper::new(pio, sm, irq, stp, dir, program),
+            stepper,
             home,
             max_steps: 0,
         }
@@ -85,7 +88,7 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         let mut cfg = Config::default();
         cfg.set_set_pins(&[&self.stepper.stp]);
         cfg.clock_divider =
-            calculate_pio_clock_divider(STEPPER_DEFAULT_FREQUENCY * INSTRUCTION_COUNT);
+            calculate_pio_clock_divider(EXTENSION_FREQUENCY * INSTRUCTION_COUNT);
         cfg.use_program(&stepper_prg.prg, &[]);
         self.stepper
             .sm

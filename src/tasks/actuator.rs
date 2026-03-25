@@ -1,3 +1,4 @@
+use embassy_futures::join::join3;
 use embassy_rp::{
     peripherals::{
         PIN_5, PIN_6, PIN_8, PIN_10, PIN_15, PIN_17, PIN_18, PIN_27, PIN_28, PIO0, PIO1,
@@ -5,10 +6,11 @@ use embassy_rp::{
     pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
 };
+use embassy_time::Timer;
 
 use crate::{
     COMMAND_CHANNEL,
-    actuators::{Extension, Gripper, PioStepperProgram, Stepper},
+    actuators::{Drivetrain, Extension, Gripper, PioStepperProgram, Stepper},
     packet::RequestPacket,
 };
 
@@ -20,7 +22,7 @@ pub async fn task(
     sm02: StateMachine<'static, PIO0, 2>,
     sm_irq10: (StateMachine<'static, PIO1, 0>, Irq<'static, PIO1, 0>),
     sm_irq11: (StateMachine<'static, PIO1, 1>, Irq<'static, PIO1, 1>),
-    sm_irq12: (StateMachine<'static, PIO1, 2>, Irq<'static, PIO1,2>),
+    sm_irq12: (StateMachine<'static, PIO1, 2>, Irq<'static, PIO1, 2>),
     btn: embassy_rp::Peri<'static, PIN_8>,
     stp1dir: embassy_rp::Peri<'static, PIN_5>,
     stp1stp: embassy_rp::Peri<'static, PIN_6>,
@@ -41,16 +43,12 @@ pub async fn task(
 
     let prg1 = PioStepperProgram::new(&mut common1);
 
-    let mut stepper1 = Stepper::new(
+    let mut drivetrain = Drivetrain::new(
         &mut common1,
         sm_irq10.0,
         sm_irq10.1,
         stp1stp,
         stp1dir,
-        &prg1,
-    );
-    let mut stepper2 = Stepper::new(
-        &mut common1,
         sm_irq11.0,
         sm_irq11.1,
         stp2stp,
@@ -82,12 +80,31 @@ pub async fn task(
             RequestPacket::GripperClose => gripper.close().await,
             RequestPacket::ExtensionPush => extension.push().await,
             RequestPacket::ExtensionPull => extension.pull().await,
-            RequestPacket::LeftStep(s) => stepper1.step(s).await,
-            RequestPacket::RightStep(s) => stepper2.step(s).await,
+            RequestPacket::Drive(s) => {
+                drivetrain.drive(s as f64).await;
+            }
+            RequestPacket::Turn(d) => {
+                drivetrain.turn(d as f64).await;
+            }
+            RequestPacket::TestRotation => {}
             RequestPacket::TestExtension => loop {
                 extension.push().await;
+                Timer::after_millis(100).await;
                 extension.pull().await;
+                Timer::after_millis(100).await;
             },
+            RequestPacket::Game => {
+                join3(drivetrain.drive(200.0), gripper.open(), extension.push()).await;
+                // drivetrain.turn(90.0).await;
+                // drivetrain.drive(100.0).await;
+                gripper.close().await;
+                Timer::after_secs(1).await;
+                extension.pull().await;
+                Timer::after_secs(1).await;
+                drivetrain.drive(-100.0).await;
+                drivetrain.turn(90.0).await;
+                drivetrain.drive(100.0).await;
+            }
         };
     }
 }

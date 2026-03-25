@@ -21,11 +21,11 @@ pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
 
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 1000;
-pub const STEPPER_STEPS_PER_REVOLUTION: u32 = 800;
 
 pub const EXTENSION_HOME_FREQUENCY: u32 = 200;
 pub const EXTENSION_HOME_OFFSET: i32 = 4;
 pub const EXTENSION_PULL_OFFSET: i32 = 2;
+pub const EXTENSION_FREQUENCY: u32 = 700;
 
 pub const SERVO_DEFAULT_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1000);
 pub const SERVO_DEFAULT_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(2000);
@@ -42,5 +42,7 @@ pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
     Duration::from_millis(40 + 5).as_nanos() * (GRIPPER_MAX_ANGLE - GRIPPER_MIN_ANGLE) / 60,
 );
 
-pub const WHEEL_DIAMETER: i32 = 56;
-pub const WHEEL_DISTANCE: i32 = 131;
+pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 55.0;
+pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 140.0;
+pub const DRIVETRAIN_STEPS_PER_REVOLUTION: u32 = 400;
+pub const DRIVETRAIN_FREQUENCY: u32 = 100;
