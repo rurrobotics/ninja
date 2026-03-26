@@ -14,6 +14,7 @@ use crate::{
     COMMAND_CHANNEL,
     actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
     packet::RequestPacket,
+    profiles::SCurveProfile,
 };
 
 #[embassy_executor::task]
@@ -66,6 +67,7 @@ pub async fn task(
         stp2stp,
         stp2dir,
         sm_irq11.2,
+        SCurveProfile::default(),
         &prg1,
     );
 

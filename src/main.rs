@@ -6,6 +6,7 @@ pub mod config;
 pub mod interrupts;
 pub mod packet;
 pub mod tasks;
+pub mod profiles;
 
 use cyw43::JoinOptions;
 use cyw43_pio::{PioSpi, RM2_CLOCK_DIVIDER};

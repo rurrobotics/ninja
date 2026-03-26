@@ -11,29 +11,32 @@ use embassy_rp::{
     pio_programs::clock_divider::calculate_pio_clock_divider,
 };
 
-use crate::config::{
-    STEPPER_DEFAULT_ACCELERATION, STEPPER_DEFAULT_FREQUENCY, STEPPER_DEFAULT_START_DELAY,
-    STEPPER_MAX_ACCELERATION_STEPS,
-};
+use crate::{config::STEPPER_DEFAULT_FREQUENCY, profiles::MotionProfile};
 
 pub struct PioStepperProgram<'a, PIO: Instance, const ACC: bool> {
     pub prg: LoadedProgram<'a, PIO>,
 }
 
 pub trait AccMode {
+    type Profile;
     type Dma<'d>;
     const INSTRUCTION_COUNT: u32;
 }
 
 pub struct NoAcc;
-pub struct WithAcc<C: Channel>(core::marker::PhantomData<C>);
+pub struct WithAcc<MP: MotionProfile, C: Channel>(
+    core::marker::PhantomData<MP>,
+    core::marker::PhantomData<C>,
+);
 
 impl AccMode for NoAcc {
+    type Profile = ();
     type Dma<'d> = ();
     const INSTRUCTION_COUNT: u32 = 32 + 32 + 1;
 }
 
-impl<C: Channel> AccMode for WithAcc<C> {
+impl<MP: MotionProfile, C: Channel> AccMode for WithAcc<MP, C> {
+    type Profile = MP;
     type Dma<'d> = Peri<'d, C>;
     const INSTRUCTION_COUNT: u32 = 32 + 32 + 4;
 }
@@ -84,8 +87,7 @@ pub struct Stepper<'d, T: Instance, const SM: usize, A: AccMode> {
     pub dir: Output<'d>,
     pub stp: pio::Pin<'d, T>,
     pub dma: A::Dma<'d>,
-    pub start_delay: u32,
-    pub acceleration: u32,
+    pub profile: A::Profile,
 }
 
 impl<'d, T: Instance, const SM: usize, A: AccMode> Stepper<'d, T, SM, A> {
@@ -97,6 +99,21 @@ impl<'d, T: Instance, const SM: usize, A: AccMode> Stepper<'d, T, SM, A> {
 
         self.sm.set_clock_divider(clock_divider);
         self.sm.clkdiv_restart();
+    }
+
+    #[inline]
+    fn convert_steps(&mut self, steps: i32) -> Option<u32> {
+        match steps {
+            1.. => {
+                self.dir.set_high();
+                Some(steps as u32 - 1)
+            }
+            ..=-1 => {
+                self.dir.set_low();
+                Some((-steps) as u32 - 1)
+            }
+            0 => None,
+        }
     }
 }
 
@@ -128,24 +145,15 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM, NoAcc> {
             dir,
             stp,
             dma: (),
-            acceleration: STEPPER_DEFAULT_ACCELERATION,
-            start_delay: STEPPER_DEFAULT_START_DELAY,
+            profile: (),
         }
     }
 
     pub async fn step(&mut self, steps: i32) {
-        let steps = match steps >= 0 {
-            true => {
-                self.dir.set_high();
-                steps
-            }
-            false => {
-                self.dir.set_low();
-                -steps
-            }
+        let Some(steps) = self.convert_steps(steps) else {
+            return;
         };
-
-        self.sm.tx().wait_push(steps as u32).await;
+        self.sm.tx().wait_push(steps).await;
         let drop = OnDrop::new(|| {
             self.sm.clear_fifos();
             unsafe {
@@ -157,7 +165,9 @@ impl<'d, T: Instance, const SM: usize> Stepper<'d, T, SM, NoAcc> {
     }
 }
 
-impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>> {
+impl<'d, T: Instance, const SM: usize, MP: MotionProfile, C: Channel>
+    Stepper<'d, T, SM, WithAcc<MP, C>>
+{
     pub fn new(
         pio: &mut Common<'d, T>,
         mut sm: StateMachine<'d, T, SM>,
@@ -165,6 +175,7 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
         stp: Peri<'d, impl PioPin>,
         dir: Peri<'d, impl Pin>,
         dma: Peri<'d, C>,
+        profile: MP,
         program: &PioStepperProgram<'d, T, true>,
     ) -> Self {
         let stp = pio.make_pio_pin(stp);
@@ -175,7 +186,7 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
         cfg.set_set_pins(&[&stp]);
 
         cfg.clock_divider = calculate_pio_clock_divider(
-            STEPPER_DEFAULT_FREQUENCY * <WithAcc<C> as AccMode>::INSTRUCTION_COUNT,
+            STEPPER_DEFAULT_FREQUENCY * <WithAcc<MP, C> as AccMode>::INSTRUCTION_COUNT,
         );
 
         cfg.use_program(&program.prg, &[]);
@@ -187,34 +198,16 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
             dir,
             stp,
             dma,
-            acceleration: STEPPER_DEFAULT_ACCELERATION,
-            start_delay: STEPPER_DEFAULT_START_DELAY,
+            profile,
         }
     }
 
     pub async fn step(&mut self, steps: i32) {
-        let steps = match steps >= 0 {
-            true => {
-                self.dir.set_high();
-                steps as u32
-            }
-            false => {
-                self.dir.set_low();
-                (-steps) as u32
-            }
+        let Some(steps) = self.convert_steps(steps) else {
+            return;
         };
 
-        let total_delays = steps as usize + 1;
-        let full_ramp_len = (self.start_delay / self.acceleration) as usize;
-        let ramp_len = full_ramp_len.min(total_delays / 2);
-        let cruise_steps = total_delays - 2 * ramp_len;
-
-        let mut accel = heapless::Vec::<u32, STEPPER_MAX_ACCELERATION_STEPS>::new();
-        let mut decel = heapless::Vec::<u32, STEPPER_MAX_ACCELERATION_STEPS>::new();
-        for i in 0..ramp_len {
-            let _ = accel.push(self.start_delay - (i as u32 * self.acceleration));
-            let _ = decel.push(self.start_delay - ((ramp_len - 1 - i) as u32 * self.acceleration));
-        }
+        let (accel, cruise, decel) = self.profile.delays(steps);
 
         self.sm.tx().wait_push(steps).await;
 
@@ -225,10 +218,10 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
                 .await;
         }
 
-        if cruise_steps != 0 {
+        if cruise != 0 {
             self.sm
                 .tx()
-                .dma_push_repeated::<_, u32>(self.dma.reborrow(), cruise_steps)
+                .dma_push_repeated::<_, u32>(self.dma.reborrow(), cruise)
                 .await;
         }
 

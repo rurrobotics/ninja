@@ -17,16 +17,31 @@ use crate::{
         DRIVETRAIN_FREQUENCY, DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER,
         DRIVETRAIN_WHEEL_DISTANCE,
     },
+    profiles::MotionProfile,
 };
 
-pub struct Drivetrain<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Channel>
-{
-    stepper1: Stepper<'d, T, SM1, WithAcc<C1>>,
-    stepper2: Stepper<'d, T, SM2, WithAcc<C2>>,
+pub struct Drivetrain<
+    'd,
+    T: Instance,
+    const SM1: usize,
+    const SM2: usize,
+    MP: MotionProfile,
+    C1: Channel,
+    C2: Channel,
+> {
+    stepper1: Stepper<'d, T, SM1, WithAcc<MP, C1>>,
+    stepper2: Stepper<'d, T, SM2, WithAcc<MP, C2>>,
 }
 
-impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Channel>
-    Drivetrain<'d, T, SM1, SM2, C1, C2>
+impl<
+    'd,
+    T: Instance,
+    const SM1: usize,
+    const SM2: usize,
+    C1: Channel,
+    C2: Channel,
+    MP: MotionProfile + Copy,
+> Drivetrain<'d, T, SM1, SM2, MP, C1, C2>
 {
     pub fn new(
         pio: &mut Common<'d, T>,
@@ -40,14 +55,17 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Chann
         stp2: Peri<'d, impl PioPin>,
         dir2: Peri<'d, impl Pin>,
         dma2: Peri<'d, C2>,
+        profile: MP,
         program: &PioStepperProgram<'d, T, true>,
     ) -> Self {
-        let mut stepper1 =
-            Stepper::<'d, T, SM1, WithAcc<C1>>::new(pio, sm1, irq1, stp1, dir1, dma1, program);
+        let mut stepper1 = Stepper::<'d, T, SM1, WithAcc<MP, C1>>::new(
+            pio, sm1, irq1, stp1, dir1, dma1, profile, program,
+        );
         stepper1.set_frequency(DRIVETRAIN_FREQUENCY);
 
-        let mut stepper2 =
-            Stepper::<'d, T, SM2, WithAcc<C2>>::new(pio, sm2, irq2, stp2, dir2, dma2, program);
+        let mut stepper2 = Stepper::<'d, T, SM2, WithAcc<MP, C2>>::new(
+            pio, sm2, irq2, stp2, dir2, dma2, profile, program,
+        );
         stepper2.set_frequency(DRIVETRAIN_FREQUENCY);
 
         Self { stepper1, stepper2 }
@@ -60,7 +78,7 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Chann
     pub async fn drive(&mut self, distance: f64) -> i32 {
         let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
             / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps - 1, 1 - steps).await;
+        self.step(steps, -steps).await;
         steps
     }
 
@@ -68,7 +86,7 @@ impl<'d, T: Instance, const SM1: usize, const SM2: usize, C1: Channel, C2: Chann
         let distance = degrees * PI / 360.0 * DRIVETRAIN_WHEEL_DISTANCE;
         let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
             / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps - 1, steps - 1).await;
+        self.step(steps, steps).await;
         steps
     }
 }

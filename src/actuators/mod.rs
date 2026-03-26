@@ -1,11 +1,11 @@
+mod drivetrain;
 mod extension;
 mod gripper;
 mod servo;
 mod stepper;
-mod drivetrain;
 
+pub use drivetrain::Drivetrain;
 pub use extension::Extension;
 pub use gripper::Gripper;
 pub use servo::{Servo, ServoBuilder};
-pub use stepper::{PioStepperProgram, Stepper, NoAcc, WithAcc, AccMode};
-pub use drivetrain::Drivetrain;
+pub use stepper::{AccMode, NoAcc, PioStepperProgram, Stepper, WithAcc};
