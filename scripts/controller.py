@@ -3,7 +3,7 @@ from time import sleep
 from random import randint
 
 # Configuration
-HOST = "172.16.0.171"
+HOST = "10.161.211.180"
 PORT = 1234
 
 
@@ -47,14 +47,7 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        [5],
-        [6],
-        [5],
-        [6],
-        [5],
-        [6],
-        [5],
-        [6],
+        [9],
         # [2],
         # [1],
         # [3],
@@ -67,8 +60,8 @@ def main():
         while True:
             for p in packets:
                 packet = bytearray(p)
-                if p[0] in [5]:
-                    packet.extend(varint_i32(100))
+                if p[0] in [5, 9]:
+                    packet.extend(varint_i32(200))
                 if p[0] in [6]:
                     packet.extend(varint_i32(90))
                 print(f"Sending: {packet.hex()}")

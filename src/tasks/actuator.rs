@@ -14,7 +14,7 @@ use crate::{
     COMMAND_CHANNEL,
     actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
     packet::RequestPacket,
-    profiles::SCurveProfile,
+    profiles::TrapezoidProfile,
 };
 
 #[embassy_executor::task]
@@ -67,7 +67,7 @@ pub async fn task(
         stp2stp,
         stp2dir,
         sm_irq11.2,
-        SCurveProfile::default(),
+        TrapezoidProfile::default(),
         &prg1,
     );
 
@@ -107,6 +107,12 @@ pub async fn task(
                 extension.push().await;
                 Timer::after_millis(100).await;
                 extension.pull().await;
+                Timer::after_millis(100).await;
+            },
+            RequestPacket::TestSquare(d) => loop {
+                drivetrain.drive(d as f64).await;
+                Timer::after_millis(100).await;
+                drivetrain.turn(90.0).await;
                 Timer::after_millis(100).await;
             },
             RequestPacket::Game => {
