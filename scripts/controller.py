@@ -47,7 +47,7 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        [9],
+        [10],
         # [2],
         # [1],
         # [3],
@@ -60,7 +60,7 @@ def main():
         while True:
             for p in packets:
                 packet = bytearray(p)
-                if p[0] in [5, 9]:
+                if p[0] in [5, 9, 10]:
                     packet.extend(varint_i32(200))
                 if p[0] in [6]:
                     packet.extend(varint_i32(90))

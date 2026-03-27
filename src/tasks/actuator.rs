@@ -115,6 +115,12 @@ pub async fn task(
                 drivetrain.turn(90.0).await;
                 Timer::after_millis(100).await;
             },
+            RequestPacket::TestLine(d) => loop {
+                drivetrain.drive(d as f64).await;
+                Timer::after_millis(100).await;
+                drivetrain.drive(-(d as f64)).await;
+                Timer::after_secs(5).await;
+            },
             RequestPacket::Game => {
                 join3(drivetrain.drive(200.0), gripper.open(), extension.push()).await;
                 // drivetrain.turn(90.0).await;

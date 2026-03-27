@@ -12,6 +12,7 @@ pub enum RequestPacket {
     TestExtension, // = 7,
     TestRotation, // = 8,
     TestSquare(u32), // = 9,
+    TestLine(u32), // = 10
 }
 
 #[derive(Debug, Serialize, Deserialize)]
