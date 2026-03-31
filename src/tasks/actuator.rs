@@ -1,4 +1,4 @@
-use embassy_futures::join::join3;
+use embassy_futures::join::join;
 use embassy_rp::{
     Peri,
     peripherals::{
@@ -122,17 +122,35 @@ pub async fn task(
                 Timer::after_secs(5).await;
             },
             RequestPacket::Game => {
-                join3(drivetrain.drive(200.0), gripper.open(), extension.push()).await;
-                // drivetrain.turn(90.0).await;
-                // drivetrain.drive(100.0).await;
+                // Grab
+                join(drivetrain.drive(160.0), gripper.open()).await;
+                drivetrain.turn(-90.0).await;
+                extension.push().await;
+                drivetrain.drive(180.0).await;
                 gripper.close().await;
-                Timer::after_millis(200).await;
                 extension.pull().await;
-                Timer::after_millis(200).await;
-                // drivetrain.turn(90.0).await;
-                drivetrain.drive(150.0).await;
-                Timer::after_millis(200).await;
-                drivetrain.drive(-350.0).await;
+                drivetrain.drive(40.0).await;
+                drivetrain.drive(-210.0).await;
+
+                // Push 1
+                drivetrain.turn(90.0).await;
+                drivetrain.drive(300.0).await;
+                drivetrain.turn(-90.0).await;
+                drivetrain.drive(140.0).await;
+                drivetrain.turn(90.0).await;
+                drivetrain.drive(170.0).await;
+                drivetrain.turn(45.0).await;
+                drivetrain.turn(-45.0).await;
+                drivetrain.drive(-470.0).await;
+
+                // Leave
+                gripper.open().await;
+                extension.push().await;
+                drivetrain.drive(-90.0).await;
+                drivetrain.turn(90.0).await;
+                drivetrain.drive(90.0).await;
+                drivetrain.turn(-90.0).await;
+                drivetrain.drive(500.0).await;
             }
         };
     }

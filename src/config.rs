@@ -27,8 +27,9 @@ pub const STEPPER_DEFAULT_JERK: u32 = 1;
 pub const STEPPER_DEFAULT_ACCELERATION: u32 = 1;
 
 
-pub const EXTENSION_HOME_FREQUENCY: u32 = 200;
-pub const EXTENSION_HOME_OFFSET: i32 = 4;
+pub const EXTENSION_HOME_FREQUENCY: u32 = 400;
+// pub const EXTENSION_HOME_OFFSET: i32 = 4;
+pub const EXTENSION_HOME_OFFSET: i32 = 120;
 pub const EXTENSION_PULL_OFFSET: i32 = 2;
 pub const EXTENSION_FREQUENCY: u32 = 700;
 
@@ -40,14 +41,14 @@ pub const SERVO_MAX_DEGREE_ROTATION: u64 = 180;
 pub const GRIPPER_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(320);
 pub const GRIPPER_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1200);
 pub const GRIPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1786);
-pub const GRIPPER_MIN_ANGLE: u64 = 27;
-pub const GRIPPER_MAX_ANGLE: u64 = 135;
+pub const GRIPPER_MIN_ANGLE: u64 = 50;
+pub const GRIPPER_MAX_ANGLE: u64 = 153;
 // 0.04s per 60, 0.005s margin
 pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
     Duration::from_millis(40 + 5).as_nanos() * (GRIPPER_MAX_ANGLE - GRIPPER_MIN_ANGLE) / 60,
 );
 
-pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 55.0;
-pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 137.0;
+pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 56.0;
+pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 159.0;
 pub const DRIVETRAIN_STEPS_PER_REVOLUTION: u32 = 400;
 pub const DRIVETRAIN_FREQUENCY: u32 = 400;
