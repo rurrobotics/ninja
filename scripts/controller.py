@@ -3,7 +3,7 @@ from time import sleep
 from random import randint
 
 # Configuration
-HOST = "10.161.211.180"
+HOST = "10.29.229.180"
 PORT = 1234
 
 
@@ -47,7 +47,7 @@ def main():
     print(f"Connecting to {HOST}:{PORT}...")
 
     packets = [
-        [10],
+        [0],
         # [2],
         # [1],
         # [3],
