@@ -152,6 +152,12 @@ pub async fn task(
                 drivetrain.turn(-90.0).await;
                 drivetrain.drive(500.0).await;
             }
-        };
+            RequestPacket::SetDrivetrainFrequency(freq) => {
+                drivetrain.set_frequency(freq);
+            }
+            RequestPacket::SetExtensionFrequency(freq) => {
+                extension.set_frequency(freq);
+            }
+        }
     }
 }

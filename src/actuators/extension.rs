@@ -44,6 +44,10 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         }
     }
 
+    pub fn set_frequency(&mut self, freq: u32) {
+        self.stepper.set_frequency(freq);
+    }
+
     pub async fn push(&mut self) {
         self.stepper.step(self.max_steps).await;
     }

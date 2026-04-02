@@ -71,6 +71,11 @@ impl<
         Self { stepper1, stepper2 }
     }
 
+    pub fn set_frequency(&mut self, freq: u32) {
+        self.stepper1.set_frequency(freq);
+        self.stepper2.set_frequency(freq);
+    }
+
     pub async fn step(&mut self, steps1: i32, steps2: i32) {
         join(self.stepper1.step(steps1), self.stepper2.step(steps2)).await;
     }
