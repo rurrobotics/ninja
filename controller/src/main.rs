@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
-use std::io::Write;
+use std::{io::Write, net::SocketAddr};
 use std::net::TcpStream;
 use std::path::PathBuf;
 
@@ -45,7 +45,7 @@ impl From<JsonAction> for Action {
 #[command(version, about = "Encode robot control packets via postcard/serde")]
 struct Cli {
     #[arg(long, short)]
-    address: String,
+    address: SocketAddr,
 
     #[command(subcommand)]
     command: PacketCommand,
