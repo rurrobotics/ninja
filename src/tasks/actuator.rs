@@ -13,7 +13,7 @@ use embassy_time::Timer;
 use crate::{
     COMMAND_CHANNEL,
     actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
-    packet::RequestPacket,
+    packet::{Action, RequestPacket},
     profiles::TrapezoidProfile,
 };
 
@@ -91,38 +91,23 @@ pub async fn task(
 
         log::info!("Actuator received: {:?}", cmd);
 
+        let mut handle_action = async |action| match action {
+            Action::GripperOpen => gripper.open().await,
+            Action::GripperClose => gripper.close().await,
+            Action::ExtensionPush => extension.push().await,
+            Action::ExtensionPull => extension.pull().await,
+            Action::Drive(distance) => {
+                drivetrain.drive(distance as f64).await;
+            }
+            Action::Turn(degree) => {
+                drivetrain.turn(degree as f64).await;
+            }
+            Action::SetDrivetrainFrequency(freq) => drivetrain.set_frequency(freq),
+            Action::SetExtensionFrequency(freq) => extension.set_frequency(freq),
+        };
+
         match cmd {
-            RequestPacket::GripperOpen => gripper.open().await,
-            RequestPacket::GripperClose => gripper.close().await,
-            RequestPacket::ExtensionPush => extension.push().await,
-            RequestPacket::ExtensionPull => extension.pull().await,
-            RequestPacket::Drive(s) => {
-                drivetrain.drive(s as f64).await;
-            }
-            RequestPacket::Turn(d) => {
-                drivetrain.turn(d as f64).await;
-            }
-            RequestPacket::TestRotation => {}
-            RequestPacket::TestExtension => loop {
-                extension.push().await;
-                Timer::after_millis(100).await;
-                extension.pull().await;
-                Timer::after_millis(100).await;
-            },
-            RequestPacket::TestSquare(d) => loop {
-                drivetrain.drive(d as f64).await;
-                Timer::after_millis(100).await;
-                drivetrain.turn(90.0).await;
-                Timer::after_millis(100).await;
-            },
-            RequestPacket::TestLine(d) => loop {
-                drivetrain.drive(d as f64).await;
-                Timer::after_millis(100).await;
-                drivetrain.drive(-(d as f64)).await;
-                Timer::after_secs(5).await;
-            },
             RequestPacket::Game => {
-                // Grab
                 join(drivetrain.drive(160.0), gripper.open()).await;
                 drivetrain.turn(-90.0).await;
                 extension.push().await;
@@ -152,11 +137,45 @@ pub async fn task(
                 drivetrain.turn(-90.0).await;
                 drivetrain.drive(500.0).await;
             }
-            RequestPacket::SetDrivetrainFrequency(freq) => {
-                drivetrain.set_frequency(freq);
+            RequestPacket::Action(action) => handle_action(action).await,
+            RequestPacket::Custom(vec) => {
+                for action in vec {
+                    handle_action(action).await;
+                }
             }
-            RequestPacket::SetExtensionFrequency(freq) => {
-                extension.set_frequency(freq);
+
+            RequestPacket::TestExtension(number) => {
+                for _ in 0..number {
+                    extension.push().await;
+                    Timer::after_millis(100).await;
+                    extension.pull().await;
+                    Timer::after_millis(100).await;
+                }
+            }
+            RequestPacket::TestRotation(number) => {
+                for _ in 0..number {
+                    drivetrain.turn(360.0).await;
+                    Timer::after_secs(5).await;
+                }
+            }
+            RequestPacket::TestSquare(number, distance) => {
+                for _ in 0..number {
+                    for _ in 0..4 {
+                        drivetrain.drive(distance as f64).await;
+                        Timer::after_millis(100).await;
+                        drivetrain.turn(90.0).await;
+                        Timer::after_millis(100).await;
+                    }
+                    Timer::after_secs(5).await;
+                }
+            }
+            RequestPacket::TestLine(number, distance) => {
+                for _ in 0..number {
+                    drivetrain.drive(distance as f64).await;
+                    Timer::after_millis(100).await;
+                    drivetrain.drive(-(distance as f64)).await;
+                    Timer::after_secs(5).await;
+                }
             }
         }
     }

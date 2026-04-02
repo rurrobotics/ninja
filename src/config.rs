@@ -20,6 +20,8 @@ pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;
 
+pub const PACKET_MAX_ACTIONS: usize = 64;
+
 pub const STEPPER_MAX_ACCELERATION_STEPS: usize = 256;
 pub const STEPPER_DEFAULT_FREQUENCY: u32 = 1000;
 pub const STEPPER_DEFAULT_START_DELAY: u32 = 100;
