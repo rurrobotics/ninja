@@ -1,5 +1,8 @@
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
+use std::io::Write;
+use std::net::TcpStream;
 use std::path::PathBuf;
 
 mod packet;
@@ -41,6 +44,9 @@ impl From<JsonAction> for Action {
 #[derive(Parser, Debug)]
 #[command(version, about = "Encode robot control packets via postcard/serde")]
 struct Cli {
+    #[arg(long, short)]
+    address: String,
+
     #[command(subcommand)]
     command: PacketCommand,
 }
@@ -102,33 +108,24 @@ impl From<ActionCommand> for Action {
     }
 }
 
-impl From<PacketCommand> for RequestPacket {
-    fn from(cmd: PacketCommand) -> Self {
-        match cmd {
+impl TryFrom<PacketCommand> for RequestPacket {
+    type Error = anyhow::Error;
+
+    fn try_from(cmd: PacketCommand) -> Result<Self> {
+        let packet = match cmd {
             PacketCommand::Game => RequestPacket::Game,
             PacketCommand::Action { action } => RequestPacket::Action(Action::from(action)),
             PacketCommand::Custom { file } => {
-                let content = std::fs::read_to_string(&file).unwrap_or_else(|e| {
-                    eprintln!("Error reading '{}': {}", file.display(), e);
-                    std::process::exit(1);
-                });
-                let json_actions: Vec<JsonAction> =
-                    serde_json::from_str(&content).unwrap_or_else(|e| {
-                        eprintln!("Error parsing '{}': {}", file.display(), e);
-                        eprintln!("Expected a JSON array of action objects, e.g.:");
-                        eprintln!(r#"  ["GripperOpen", {{"Drive": {{"speed": 100}}}}, {{"Turn": {{"angle": -45}}}}]"#);
-                        std::process::exit(1);
-                    });
-                if json_actions.len() > 64 {
-                    eprintln!(
-                        "Error: {} actions provided, maximum is 64.",
-                        json_actions.len()
-                    );
-                    std::process::exit(1);
-                }
+                let content = std::fs::read_to_string(&file)?;
+                let json_actions: Vec<JsonAction> = serde_json::from_str(&content)?;
+                anyhow::ensure!(
+                    json_actions.len() <= 64,
+                    "{} actions provided, maximum is 64",
+                    json_actions.len()
+                );
                 let mut actions: heapless::Vec<Action, 64> = heapless::Vec::new();
                 for a in json_actions {
-                    actions.push(a.into()).expect("Vec capacity exceeded");
+                    actions.push(a.into()).unwrap();
                 }
                 RequestPacket::Custom(actions)
             }
@@ -138,13 +135,20 @@ impl From<PacketCommand> for RequestPacket {
                 RequestPacket::TestSquare(times, distance)
             }
             PacketCommand::TestLine { times, distance } => RequestPacket::TestLine(times, distance),
-        }
+        };
+        Ok(packet)
     }
 }
 
-fn main() {
+fn main() -> Result<()> {
     let cli = Cli::parse();
-    let packet = RequestPacket::from(cli.command);
-    let bytes = postcard::to_allocvec(&packet).expect("Failed to serialize packet");
-    std::io::Write::write_all(&mut std::io::stdout(), &bytes).expect("Failed to write output");
+
+    let packet = RequestPacket::try_from(cli.command)?;
+    let bytes = postcard::to_allocvec(&packet).context("Failed to serialize packet")?;
+
+    let mut stream = TcpStream::connect(&cli.address)?;
+
+    stream.write_all(&bytes)?;
+
+    Ok(())
 }
