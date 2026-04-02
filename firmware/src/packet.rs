@@ -1,9 +1,7 @@
 use heapless::Vec;
 use serde::{Deserialize, Serialize};
 
-use crate::config::PACKET_MAX_ACTIONS;
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum Action {
     GripperOpen,   // 0
     GripperClose,  // 1
@@ -16,11 +14,11 @@ pub enum Action {
     SetExtensionFrequency(u32),  // 7
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RequestPacket {
-    Game,                                    // 0
-    Action(Action),                          // 1
-    Custom(Vec<Action, PACKET_MAX_ACTIONS>), // 2
+    Game,                    // 0
+    Action(Action),          // 1
+    Custom(Vec<Action, 64>), // 2
 
     // Number of times, distance/angle
     TestExtension(u32),   // 3
