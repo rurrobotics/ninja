@@ -27,6 +27,33 @@ GND  - GND  |         | 7V4 - 7V4
 
 Always on pins: `GP3`, `GP12`, `GP20`.
 
+## Controller
+- [Download latest build](https://nightly.link/rurrobotics/ninja/workflows/build/master?preview)
+- [Direct link for linux](https://nightly.link/rurrobotics/ninja/workflows/build/master/controller-linux.zip)
+- [Direct link for windows](https://nightly.link/rurrobotics/ninja/workflows/build/master/controller-windows.zip)
+
+### Usage
+```
+Encode robot control packets via postcard/serde
+
+Usage: controller --address <ADDRESS> <COMMAND>
+
+Commands:
+  game            
+  action          
+  custom          
+  test-extension  
+  test-rotation   
+  test-square     
+  test-line       
+  help            Print this message or the help of the given subcommand(s)
+
+Options:
+  -a, --address <ADDRESS>  
+  -h, --help               Print help
+  -V, --version            Print version
+```
+
 ## TODO
 - ~~Blocking motor calls (irq?)~~
 - ~~Accelerate/Decelerate~~
