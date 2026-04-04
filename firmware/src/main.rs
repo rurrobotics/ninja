@@ -5,8 +5,9 @@ pub mod actuators;
 pub mod config;
 pub mod interrupts;
 pub mod packet;
-pub mod tasks;
 pub mod profiles;
+pub mod sensors;
+pub mod tasks;
 
 use cyw43::JoinOptions;
 use cyw43_pio::{PioSpi, RM2_CLOCK_DIVIDER};
@@ -73,13 +74,11 @@ async fn main(spawner: Spawner) {
         (pio1.sm0, pio1.irq0, p.DMA_CH1),
         (pio1.sm1, pio1.irq1, p.DMA_CH2),
         (pio1.sm2, pio1.irq2),
+        (p.PIN_19, p.PIN_21),
         p.PIN_8,
-        p.PIN_5,
-        p.PIN_6,
-        p.PIN_28,
-        p.PIN_27,
-        p.PIN_18,
-        p.PIN_17,
+        (p.PIN_5, p.PIN_6),
+        (p.PIN_28, p.PIN_27),
+        (p.PIN_18, p.PIN_17),
         p.PIN_10,
         p.PIN_15,
     ));

@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
-use std::{io::Write, net::SocketAddr};
 use std::net::TcpStream;
 use std::path::PathBuf;
+use std::{io::Write, net::SocketAddr};
 
 mod packet;
 
@@ -20,6 +20,8 @@ enum JsonAction {
     Turn { angle: i32 },
     SetDrivetrainFrequency { frequency: u32 },
     SetExtensionFrequency { frequency: u32 },
+    SetProximityEnable { enable: bool },
+    SetProximityThreshold { threshold: u32 },
 }
 
 impl From<JsonAction> for Action {
@@ -36,6 +38,10 @@ impl From<JsonAction> for Action {
             }
             JsonAction::SetExtensionFrequency { frequency } => {
                 Action::SetExtensionFrequency(frequency)
+            }
+            JsonAction::SetProximityEnable { enable } => Action::SetProximityEnable(enable),
+            JsonAction::SetProximityThreshold { threshold } => {
+                Action::SetProximityThreshold(threshold)
             }
         }
     }
@@ -87,6 +93,8 @@ enum ActionCommand {
     Turn { angle: i32 },
     SetDrivetrainFrequency { frequency: u32 },
     SetExtensionFrequency { frequency: u32 },
+    SetProximityEnable { enable: bool },
+    SetProximityThreshold { threshold: u32 },
 }
 
 impl From<ActionCommand> for Action {
@@ -103,6 +111,10 @@ impl From<ActionCommand> for Action {
             }
             ActionCommand::SetExtensionFrequency { frequency } => {
                 Action::SetExtensionFrequency(frequency)
+            }
+            ActionCommand::SetProximityEnable { enable } => Action::SetProximityEnable(enable),
+            ActionCommand::SetProximityThreshold { threshold } => {
+                Action::SetProximityThreshold(threshold)
             }
         }
     }
