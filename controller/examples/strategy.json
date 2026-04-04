@@ -4,11 +4,11 @@
         "speed": 160
     },
     {
-        "name": "GripperOpen"
-    },
-    {
         "name": "Turn",
         "angle": -90
+    },
+    {
+        "name": "GripperOpen"
     },
     {
         "name": "ExtensionPush"
@@ -37,7 +37,7 @@
     },
     {
         "name": "Drive",
-        "speed": 300
+        "speed": 240
     },
     {
         "name": "Turn",
@@ -45,7 +45,7 @@
     },
     {
         "name": "Drive",
-        "speed": 140
+        "speed": 100
     },
     {
         "name": "Turn",
@@ -56,16 +56,8 @@
         "speed": 170
     },
     {
-        "name": "Turn",
-        "angle": 45
-    },
-    {
-        "name": "Turn",
-        "angle": -45
-    },
-    {
         "name": "Drive",
-        "speed": -470
+        "speed": -390
     },
     {
         "name": "GripperOpen"
@@ -91,6 +83,6 @@
     },
     {
         "name": "Drive",
-        "speed": 500
+        "speed": 480
     }
 ]
