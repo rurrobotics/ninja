@@ -7,6 +7,6 @@ runner = "picotool load -u -v -x -t elf"
 target = "thumbv8m.main-none-eabihf"
 
 [env]
-WIFI_NETWORK = "ETF Robot"
-WIFI_PASSWORD = "etfrobot"
+WIFI_NETWORK = "G3"
+WIFI_PASSWORD = "g3radionica.123"
 # DEFMT_LOG = "debug"

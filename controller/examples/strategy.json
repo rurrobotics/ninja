@@ -1,0 +1,96 @@
+[
+    {
+        "name": "Drive",
+        "speed": 160
+    },
+    {
+        "name": "GripperOpen"
+    },
+    {
+        "name": "Turn",
+        "angle": -90
+    },
+    {
+        "name": "ExtensionPush"
+    },
+    {
+        "name": "Drive",
+        "speed": 180
+    },
+    {
+        "name": "GripperClose"
+    },
+    {
+        "name": "ExtensionPull"
+    },
+    {
+        "name": "Drive",
+        "speed": 40
+    },
+    {
+        "name": "Drive",
+        "speed": -210
+    },
+    {
+        "name": "Turn",
+        "angle": 90
+    },
+    {
+        "name": "Drive",
+        "speed": 300
+    },
+    {
+        "name": "Turn",
+        "angle": -90
+    },
+    {
+        "name": "Drive",
+        "speed": 140
+    },
+    {
+        "name": "Turn",
+        "angle": 90
+    },
+    {
+        "name": "Drive",
+        "speed": 170
+    },
+    {
+        "name": "Turn",
+        "angle": 45
+    },
+    {
+        "name": "Turn",
+        "angle": -45
+    },
+    {
+        "name": "Drive",
+        "speed": -470
+    },
+    {
+        "name": "GripperOpen"
+    },
+    {
+        "name": "ExtensionPush"
+    },
+    {
+        "name": "Drive",
+        "speed": -90
+    },
+    {
+        "name": "Turn",
+        "angle": 90
+    },
+    {
+        "name": "Drive",
+        "speed": 90
+    },
+    {
+        "name": "Turn",
+        "angle": -90
+    },
+    {
+        "name": "Drive",
+        "speed": 500
+    }
+]
