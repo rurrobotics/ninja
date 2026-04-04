@@ -9,19 +9,25 @@ pub mod profiles;
 pub mod sensors;
 pub mod tasks;
 
+use core::net::Ipv4Addr;
+use core::str::FromStr;
+
 use cyw43::JoinOptions;
 use cyw43_pio::{PioSpi, RM2_CLOCK_DIVIDER};
 use embassy_executor::Spawner;
-use embassy_net::{Config, StackResources};
+use embassy_net::{Config, Ipv4Cidr, StackResources, StaticConfigV4};
 use embassy_rp::clocks::RoscRng;
 use embassy_rp::gpio::{Level, Output};
 use embassy_rp::pio::Pio;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::signal::Signal;
+use heapless::Vec;
 use panic_halt as _;
 use static_cell::StaticCell;
 
-use crate::config::CYW43_POWER_MANAGEMENT_MODE;
+use crate::config::{
+    CYW43_POWER_MANAGEMENT_MODE, WIFI_STATIC_GATEWAY, WIFI_STATIC_IPV4CIDR, WIFI_USE_STATIC,
+};
 use crate::interrupts::Irqs;
 use crate::packet::RequestPacket;
 
@@ -93,7 +99,14 @@ async fn main(spawner: Spawner) {
         .set_power_management(CYW43_POWER_MANAGEMENT_MODE)
         .await;
 
-    let config = Config::dhcpv4(Default::default());
+    let config = match WIFI_USE_STATIC {
+        true => Config::ipv4_static(StaticConfigV4 {
+            address: Ipv4Cidr::from_str(WIFI_STATIC_IPV4CIDR).unwrap(),
+            gateway: Some(Ipv4Addr::from_str(WIFI_STATIC_GATEWAY).unwrap()),
+            dns_servers: Vec::new(),
+        }),
+        false => Config::dhcpv4(Default::default()),
+    };
 
     let seed = RoscRng.next_u64();
 
