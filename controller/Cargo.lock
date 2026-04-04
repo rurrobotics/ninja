@@ -135,6 +135,7 @@ dependencies = [
  "anyhow",
  "clap",
  "heapless 0.9.2",
+ "json_comments",
  "postcard",
  "serde",
  "serde_json",
@@ -218,6 +219,12 @@ name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "json_comments"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9dbbfed4e59ba9750e15ba154fdfd9329cee16ff3df539c2666b70f58cc32105"
 
 [[package]]
 name = "lock_api"

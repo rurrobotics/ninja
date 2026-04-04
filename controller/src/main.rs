@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+use json_comments::StripComments;
 use serde::Deserialize;
 use std::net::TcpStream;
 use std::path::PathBuf;
@@ -129,7 +130,8 @@ impl TryFrom<PacketCommand> for RequestPacket {
             PacketCommand::Action { action } => RequestPacket::Action(Action::from(action)),
             PacketCommand::Custom { file } => {
                 let content = std::fs::read_to_string(&file)?;
-                let json_actions: Vec<JsonAction> = serde_json::from_str(&content)?;
+                let stripped = StripComments::new(content.as_bytes());
+                let json_actions: Vec<JsonAction> = serde_json::from_reader(stripped)?;
                 anyhow::ensure!(
                     json_actions.len() <= 64,
                     "{} actions provided, maximum is 64",
