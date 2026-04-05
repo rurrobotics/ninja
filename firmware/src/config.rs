@@ -18,7 +18,7 @@ pub const WIFI_USE_STATIC: bool = false;
 pub const WIFI_STATIC_IPV4CIDR: &'static str = "192.168.1.10/24";
 pub const WIFI_STATIC_GATEWAY: &'static str = "192.168.1.1";
 
-pub const RECEIVER_BUFFER_SIZE: usize = 64;
+pub const RECEIVER_BUFFER_SIZE: usize = 1024;
 pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
 
 pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode::Performance;

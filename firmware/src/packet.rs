@@ -20,7 +20,7 @@ pub enum Action {
 pub enum RequestPacket {
     Game,                    // 0
     Action(Action),          // 1
-    Custom(Vec<Action, 64>), // 2
+    Custom(Vec<Action, 128>), // 2
 
     // Number of times, distance/angle
     TestExtension(u32),   // 3
