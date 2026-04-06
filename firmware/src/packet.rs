@@ -1,6 +1,8 @@
 use heapless::Vec;
 use serde::{Deserialize, Serialize};
 
+pub const COMMAND_LENGTH_LIMIT: usize = 256;
+
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum Action {
     GripperOpen,   // 0
@@ -18,9 +20,9 @@ pub enum Action {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum RequestPacket {
-    Game,                    // 0
-    Action(Action),          // 1
-    Custom(Vec<Action, 256>), // 2
+    Game,                                      // 0
+    Action(Action),                            // 1
+    Custom(Vec<Action, COMMAND_LENGTH_LIMIT>), // 2
 
     // Number of times, distance/angle
     TestExtension(u32),   // 3

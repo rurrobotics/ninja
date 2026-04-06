@@ -133,11 +133,13 @@ impl TryFrom<PacketCommand> for RequestPacket {
                 let stripped = StripComments::new(content.as_bytes());
                 let json_actions: Vec<JsonAction> = serde_json::from_reader(stripped)?;
                 anyhow::ensure!(
-                    json_actions.len() <= 256,
-                    "{} actions provided, maximum is 256",
-                    json_actions.len()
+                    json_actions.len() <= packet::COMMAND_LENGTH_LIMIT,
+                    "{} actions provided, maximum is {}",
+                    json_actions.len(),
+                    packet::COMMAND_LENGTH_LIMIT,
                 );
-                let mut actions: heapless::Vec<Action, 256> = heapless::Vec::new();
+                let mut actions: heapless::Vec<Action, { packet::COMMAND_LENGTH_LIMIT }> =
+                    heapless::Vec::new();
                 for a in json_actions {
                     actions.push(a.into()).unwrap();
                 }
