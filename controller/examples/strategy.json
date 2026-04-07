@@ -84,5 +84,17 @@
     {
         "name": "Drive",
         "speed": 480
+    },
+    {
+        "name": "Drive",
+        "speed": -50
+    },
+    {
+        "name": "Turn",
+        "angle": -70
+    },
+    {
+        "name": "Drive",
+        "speed": 210
     }
 ]

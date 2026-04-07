@@ -63,15 +63,13 @@ async fn handle_game<'d>(
 
     // Push 1
     drivetrain.turn(90.0).await;
-    drivetrain.drive(300.0).await;
+    drivetrain.drive(240.0).await;
     drivetrain.turn(-90.0).await;
-    drivetrain.drive(140.0).await;
+    drivetrain.drive(100.0).await;
     drivetrain.turn(90.0).await;
     drivetrain.drive(170.0).await;
-    drivetrain.turn(45.0).await;
-    drivetrain.turn(-45.0).await;
-    drivetrain.drive(-470.0).await;
-
+    drivetrain.drive(-390.0).await;
+    
     // Leave
     gripper.open().await;
     extension.push().await;
@@ -79,7 +77,10 @@ async fn handle_game<'d>(
     drivetrain.turn(90.0).await;
     drivetrain.drive(90.0).await;
     drivetrain.turn(-90.0).await;
-    drivetrain.drive(500.0).await;
+    drivetrain.drive(480.0).await;
+    drivetrain.drive(-50.0).await;
+    drivetrain.turn(-70.0).await;
+    drivetrain.drive(210.0).await;
 }
 
 #[embassy_executor::task]
