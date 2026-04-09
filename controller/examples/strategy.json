@@ -96,5 +96,13 @@
     {
         "name": "Drive",
         "speed": 210
+    },
+    {
+        "name": "SetDrivetrainEnable",
+        "enable": false
     }
+    // {
+    //     "name": "SetExtensionEnable",
+    //     "enable": false
+    // }
 ]
