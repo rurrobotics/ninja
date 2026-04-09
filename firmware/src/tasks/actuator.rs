@@ -1,9 +1,10 @@
 use embassy_futures::{join::join, select::select};
 use embassy_rp::{
     Peri,
+    gpio::{Level, Output},
     peripherals::{
-        DMA_CH1, DMA_CH2, PIN_5, PIN_6, PIN_8, PIN_10, PIN_15, PIN_17, PIN_18, PIN_19, PIN_21,
-        PIN_27, PIN_28, PIO0, PIO1,
+        DMA_CH1, DMA_CH2, PIN_5, PIN_6, PIN_8, PIN_10, PIN_12, PIN_13, PIN_15, PIN_17, PIN_18,
+        PIN_19, PIN_21, PIN_27, PIN_28, PIO0, PIO1,
     },
     pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
@@ -28,6 +29,7 @@ async fn handle_action<'d>(
     extension: &mut ExtensionType<'d>,
     drivetrain: &mut DrivetrainType<'d>,
     proximity: &mut Proximity<'d>,
+    enables: (&mut Output<'d>, &mut Output<'d>, &mut Output<'d>),
 ) {
     match action {
         Action::GripperOpen => gripper.open().await,
@@ -44,6 +46,11 @@ async fn handle_action<'d>(
         Action::SetExtensionFrequency(freq) => extension.set_frequency(freq),
         Action::SetProximityEnable(en) => proximity.enable = en,
         Action::SetProximityThreshold(thres) => proximity.threshold = thres,
+        Action::SetDrivetrainEnable(en) => {
+            enables.0.set_level(en.into());
+            enables.1.set_level(en.into());
+        }
+        Action::SetExtensionEnable(en) => enables.2.set_level(en.into()),
     };
 }
 
@@ -69,7 +76,7 @@ async fn handle_game<'d>(
     drivetrain.turn(90.0).await;
     drivetrain.drive(170.0).await;
     drivetrain.drive(-390.0).await;
-    
+
     // Leave
     gripper.open().await;
     extension.push().await;
@@ -87,7 +94,6 @@ async fn handle_game<'d>(
 pub async fn task(
     mut common0: Common<'static, PIO0>,
     mut common1: Common<'static, PIO1>,
-    sm01: StateMachine<'static, PIO0, 1>,
     sm02: StateMachine<'static, PIO0, 2>,
     sm_irq10: (
         StateMachine<'static, PIO1, 0>,
@@ -105,15 +111,21 @@ pub async fn task(
     stepper1: (Peri<'static, PIN_5>, Peri<'static, PIN_6>),
     stepper2: (Peri<'static, PIN_28>, Peri<'static, PIN_27>),
     stepper3: (Peri<'static, PIN_18>, Peri<'static, PIN_17>),
-    srv1pwm: Peri<'static, PIN_10>,
+    enables: (
+        Peri<'static, PIN_10>,
+        Peri<'static, PIN_12>,
+        Peri<'static, PIN_13>,
+    ),
     srv2pwm: Peri<'static, PIN_15>,
 ) -> ! {
     let prg0 = PioPwmProgram::new(&mut common0);
 
-    // let pwm01 = PioPwm::new(&mut common0, sm01, srv1pwm, &prg0);
     let pwm02 = PioPwm::new(&mut common0, sm02, srv2pwm, &prg0);
 
-    // let mut servo1 = ServoBuilder::new(pwm01).build();
+    let mut stp1en = Output::new(enables.0, Level::High);
+    let mut stp2en = Output::new(enables.1, Level::High);
+    let mut stp3en = Output::new(enables.2, Level::High);
+
     let mut gripper: GripperType = Gripper::new(pwm02);
 
     let mut proximity = Proximity::new(proximity.1, proximity.0);
@@ -173,6 +185,7 @@ pub async fn task(
                     &mut extension,
                     &mut drivetrain,
                     &mut proximity,
+                    (&mut stp1en, &mut stp2en, &mut stp3en),
                 )
                 .await
             }
@@ -184,6 +197,7 @@ pub async fn task(
                         &mut extension,
                         &mut drivetrain,
                         &mut proximity,
+                        (&mut stp1en, &mut stp2en, &mut stp3en),
                     )
                     .await;
                 }

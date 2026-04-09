@@ -48,7 +48,6 @@ async fn main(spawner: Spawner) {
     spawner.must_spawn(tasks::logger(p.USB));
 
     // Stepper driver
-    let _gp12 = Output::new(p.PIN_12, Level::High);
     let _gp3 = Output::new(p.PIN_3, Level::High);
     let _gp20 = Output::new(p.PIN_20, Level::High);
 
@@ -75,7 +74,6 @@ async fn main(spawner: Spawner) {
     spawner.must_spawn(tasks::actuator(
         pio0.common,
         pio1.common,
-        pio0.sm1,
         pio0.sm2,
         (pio1.sm0, pio1.irq0, p.DMA_CH1),
         (pio1.sm1, pio1.irq1, p.DMA_CH2),
@@ -85,7 +83,7 @@ async fn main(spawner: Spawner) {
         (p.PIN_5, p.PIN_6),
         (p.PIN_28, p.PIN_27),
         (p.PIN_18, p.PIN_17),
-        p.PIN_10,
+        (p.PIN_10, p.PIN_12, p.PIN_13),
         p.PIN_15,
     ));
 

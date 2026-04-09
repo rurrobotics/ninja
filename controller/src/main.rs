@@ -23,6 +23,8 @@ enum JsonAction {
     SetExtensionFrequency { frequency: u32 },
     SetProximityEnable { enable: bool },
     SetProximityThreshold { threshold: u32 },
+    SetDrivetrainEnable { enable: bool },
+    SetExtensionEnable { enable: bool },
 }
 
 impl From<JsonAction> for Action {
@@ -44,6 +46,8 @@ impl From<JsonAction> for Action {
             JsonAction::SetProximityThreshold { threshold } => {
                 Action::SetProximityThreshold(threshold)
             }
+            JsonAction::SetDrivetrainEnable { enable } => Action::SetDrivetrainEnable(enable),
+            JsonAction::SetExtensionEnable { enable } => Action::SetExtensionEnable(enable),
         }
     }
 }
@@ -94,8 +98,13 @@ enum ActionCommand {
     Turn { angle: i32 },
     SetDrivetrainFrequency { frequency: u32 },
     SetExtensionFrequency { frequency: u32 },
-    SetProximityEnable { enable: bool },
     SetProximityThreshold { threshold: u32 },
+    EnableProximity,
+    DisableProximity,
+    EnableDrivetrain,
+    DisableDrivetrain,
+    EnableExtension,
+    DisableExtension,
 }
 
 impl From<ActionCommand> for Action {
@@ -113,10 +122,15 @@ impl From<ActionCommand> for Action {
             ActionCommand::SetExtensionFrequency { frequency } => {
                 Action::SetExtensionFrequency(frequency)
             }
-            ActionCommand::SetProximityEnable { enable } => Action::SetProximityEnable(enable),
             ActionCommand::SetProximityThreshold { threshold } => {
                 Action::SetProximityThreshold(threshold)
             }
+            ActionCommand::EnableProximity => Action::SetProximityEnable(true),
+            ActionCommand::DisableProximity => Action::SetProximityEnable(false),
+            ActionCommand::EnableDrivetrain => Action::SetDrivetrainEnable(true),
+            ActionCommand::DisableDrivetrain => Action::SetDrivetrainEnable(false),
+            ActionCommand::EnableExtension => Action::SetExtensionEnable(true),
+            ActionCommand::DisableExtension => Action::SetExtensionEnable(false),
         }
     }
 }

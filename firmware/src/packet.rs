@@ -16,6 +16,8 @@ pub enum Action {
     SetExtensionFrequency(u32),  // 7
     SetProximityEnable(bool),    // 8
     SetProximityThreshold(u32),  // 9
+    SetDrivetrainEnable(bool),   // 10
+    SetExtensionEnable(bool),    // 11
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

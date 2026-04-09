@@ -12,10 +12,10 @@ STEP - GP6  |         | GP27 - STEP
             |         |
 HOME - GP8  |         |
             |   PICO  |
-Servo 1:    |    2W   | Stepper 3:
-PWM  - GP10 |         |      - 7V4
-3V3  - GP12 |         |  GND - GND
-GND  - GND  |         | GP20 - 3V3
+Stepper EN: |    2W   | Stepper 3:
+STP1 - GP10 |         |      - 7V4
+STP2 - GP12 |         |  GND - GND
+STP3 - GP13 |         | GP20 - 3V3
             |         | GP18 - DIR
 Servo 2:    |         | GP17 - STEP
 PWM  - GP15 |         |
@@ -25,7 +25,8 @@ GND  - GND  |         | 7V4 - 7V4
             |---------|
 ```
 
-Always on pins: `GP3`, `GP12`, `GP20`.
+Always `ON` pins: `GP3`, `GP20`.  
+Ultrasonic sensor is has `ECHO` and `TRIG` tied to `GP19` and `GP21`.
 
 ## Controller
 - [Download latest build](https://nightly.link/rurrobotics/ninja/workflows/build/master?preview)
