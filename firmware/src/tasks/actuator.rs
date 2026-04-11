@@ -1,4 +1,4 @@
-use embassy_futures::{join::join, select::select};
+use embassy_futures::select::select;
 use embassy_rp::{
     Peri,
     gpio::{Level, Output},
@@ -17,11 +17,12 @@ use crate::{
     packet::{Action, RequestPacket},
     profiles::TrapezoidProfile,
     sensors::Proximity,
+    strategy::handle_game,
 };
 
-type GripperType<'d> = Gripper<'d, PIO0, 2>;
-type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, TrapezoidProfile, DMA_CH1, DMA_CH2>;
-type ExtensionType<'d> = Extension<'d, PIO1, 2>;
+pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
+pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, TrapezoidProfile, DMA_CH1, DMA_CH2>;
+pub type ExtensionType<'d> = Extension<'d, PIO1, 2>;
 
 async fn handle_action<'d>(
     action: Action,
@@ -51,43 +52,8 @@ async fn handle_action<'d>(
             enables.1.set_level(en.into());
         }
         Action::SetExtensionEnable(en) => enables.2.set_level(en.into()),
+        Action::SetColor(color) => drivetrain.set_color(color),
     };
-}
-
-async fn handle_game<'d>(
-    gripper: &mut GripperType<'d>,
-    extension: &mut ExtensionType<'d>,
-    drivetrain: &mut DrivetrainType<'d>,
-) {
-    join(drivetrain.drive(160.0), gripper.open()).await;
-    drivetrain.turn(-90.0).await;
-    extension.push().await;
-    drivetrain.drive(180.0).await;
-    gripper.close().await;
-    extension.pull().await;
-    drivetrain.drive(40.0).await;
-    drivetrain.drive(-210.0).await;
-
-    // Push 1
-    drivetrain.turn(90.0).await;
-    drivetrain.drive(240.0).await;
-    drivetrain.turn(-90.0).await;
-    drivetrain.drive(100.0).await;
-    drivetrain.turn(90.0).await;
-    drivetrain.drive(170.0).await;
-    drivetrain.drive(-390.0).await;
-
-    // Leave
-    gripper.open().await;
-    extension.push().await;
-    drivetrain.drive(-90.0).await;
-    drivetrain.turn(90.0).await;
-    drivetrain.drive(90.0).await;
-    drivetrain.turn(-90.0).await;
-    drivetrain.drive(480.0).await;
-    drivetrain.drive(-50.0).await;
-    drivetrain.turn(-70.0).await;
-    drivetrain.drive(210.0).await;
 }
 
 #[embassy_executor::task]

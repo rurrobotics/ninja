@@ -7,6 +7,7 @@ pub mod interrupts;
 pub mod packet;
 pub mod profiles;
 pub mod sensors;
+pub mod strategy;
 pub mod tasks;
 
 use core::net::Ipv4Addr;

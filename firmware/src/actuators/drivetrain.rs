@@ -17,6 +17,7 @@ use crate::{
         DRIVETRAIN_FREQUENCY, DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER,
         DRIVETRAIN_WHEEL_DISTANCE,
     },
+    packet::Color,
     profiles::MotionProfile,
 };
 
@@ -31,6 +32,7 @@ pub struct Drivetrain<
 > {
     stepper1: Stepper<'d, T, SM1, WithAcc<MP, C1>>,
     stepper2: Stepper<'d, T, SM2, WithAcc<MP, C2>>,
+    color: Color,
 }
 
 impl<
@@ -68,7 +70,11 @@ impl<
         );
         stepper2.set_frequency(DRIVETRAIN_FREQUENCY);
 
-        Self { stepper1, stepper2 }
+        Self {
+            stepper1,
+            stepper2,
+            color: Color::Blue,
+        }
     }
 
     pub fn set_frequency(&mut self, freq: u32) {
@@ -88,10 +94,19 @@ impl<
     }
 
     pub async fn turn(&mut self, degrees: f64) -> i32 {
+        let degrees = match self.color {
+            Color::Yellow => -degrees,
+            Color::Blue => degrees,
+        };
+
         let distance = degrees * PI / 360.0 * DRIVETRAIN_WHEEL_DISTANCE;
         let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
             / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
         self.step(steps, steps).await;
         steps
+    }
+
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
     }
 }

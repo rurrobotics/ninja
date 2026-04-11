@@ -18,6 +18,14 @@ pub enum Action {
     SetProximityThreshold(u32),  // 9
     SetDrivetrainEnable(bool),   // 10
     SetExtensionEnable(bool),    // 11
+    SetColor(Color),             // 12
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum Color {
+    Yellow,
+    Blue,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

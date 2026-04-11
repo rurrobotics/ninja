@@ -1,4 +1,3 @@
-use cyw43::Control;
 use embassy_net::{Stack, tcp::TcpSocket};
 use embedded_io_async::Write as _;
 
