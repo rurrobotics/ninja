@@ -14,9 +14,12 @@ pub const DESCRIPTION: &CStr = unsafe {
 
 pub const WIFI_NETWORK: &'static str = env!("WIFI_NETWORK");
 pub const WIFI_PASSWORD: &'static str = env!("WIFI_PASSWORD");
-pub const WIFI_USE_STATIC: bool = false;
-pub const WIFI_STATIC_IPV4CIDR: &'static str = "192.168.1.10/24";
-pub const WIFI_STATIC_GATEWAY: &'static str = "192.168.1.1";
+pub const WIFI_USE_STATIC: bool = {
+    let s = env!("WIFI_USE_STATIC").as_bytes();
+    matches!(s, b"true")
+};
+pub const WIFI_STATIC_IPV4CIDR: &'static str = "192.168.4.10/24";
+pub const WIFI_STATIC_GATEWAY: &'static str = "192.168.4.1";
 
 pub const RECEIVER_BUFFER_SIZE: usize = 1024;
 pub const RECEIVER_KEEP_ALIVE_INTERVAL: Duration = Duration::from_secs(10);
