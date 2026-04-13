@@ -2,9 +2,9 @@ use embassy_net::{Stack, tcp::TcpSocket};
 use embedded_io_async::Write as _;
 
 use crate::{
-    COMMAND_CHANNEL,
+    COMMAND_CHANNEL, RESPONSE_CHANNEL,
     config::{RECEIVER_BUFFER_SIZE, RECEIVER_KEEP_ALIVE_INTERVAL},
-    packet::{RequestPacket, ResponsePacket},
+    packet::RequestPacket,
 };
 
 #[embassy_executor::task]
@@ -49,7 +49,7 @@ pub async fn task(stack: Stack<'static>) -> ! {
             log::info!("{:?}", req);
             COMMAND_CHANNEL.signal(req);
 
-            let resp = match postcard::to_vec::<_, 4>(&ResponsePacket { status: true }) {
+            let resp = match postcard::to_vec::<_, 4>(&RESPONSE_CHANNEL.wait().await) {
                 Ok(rp) => rp,
                 Err(e) => {
                     log::warn!("response error: {:?}", e);

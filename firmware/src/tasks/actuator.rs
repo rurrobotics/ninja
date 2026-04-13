@@ -12,9 +12,9 @@ use embassy_rp::{
 use embassy_time::Timer;
 
 use crate::{
-    COMMAND_CHANNEL,
+    COMMAND_CHANNEL, RESPONSE_CHANNEL,
     actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
-    packet::{Action, RequestPacket},
+    packet::{Action, RequestPacket, ResponsePacket},
     profiles::TrapezoidProfile,
     sensors::Proximity,
     strategy::handle_game,
@@ -203,5 +203,7 @@ pub async fn task(
                 }
             }
         }
+
+        RESPONSE_CHANNEL.signal(ResponsePacket::default());
     }
 }

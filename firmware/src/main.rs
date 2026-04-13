@@ -30,7 +30,7 @@ use crate::config::{
     CYW43_POWER_MANAGEMENT_MODE, WIFI_STATIC_GATEWAY, WIFI_STATIC_IPV4CIDR, WIFI_USE_STATIC,
 };
 use crate::interrupts::Irqs;
-use crate::packet::RequestPacket;
+use crate::packet::{RequestPacket, ResponsePacket};
 
 #[unsafe(link_section = ".bi_entries")]
 #[used]
@@ -42,6 +42,7 @@ pub static PICOTOOL_ENTRIES: [embassy_rp::binary_info::EntryAddr; 4] = [
 ];
 
 static COMMAND_CHANNEL: Signal<CriticalSectionRawMutex, RequestPacket> = Signal::new();
+static RESPONSE_CHANNEL: Signal<CriticalSectionRawMutex, ResponsePacket> = Signal::new();
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {

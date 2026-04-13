@@ -45,3 +45,9 @@ pub enum RequestPacket {
 pub struct ResponsePacket {
     pub status: bool,
 }
+
+impl Default for ResponsePacket {
+    fn default() -> Self {
+        Self { status: true }
+    }
+}
