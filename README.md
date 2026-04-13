@@ -31,6 +31,7 @@ Ultrasonic sensor is has `ECHO` and `TRIG` tied to `GP19` and `GP21`.
 ## Controller
 - [Download latest build](https://nightly.link/rurrobotics/ninja/workflows/build/master?preview)
 - [Direct link for linux](https://nightly.link/rurrobotics/ninja/workflows/build/master/controller-linux.zip)
+- [Direct link for rpi5](https://nightly.link/rurrobotics/ninja/workflows/build/master/controller-rpi5.zip)
 - [Direct link for windows](https://nightly.link/rurrobotics/ninja/workflows/build/master/controller-windows.zip)
 
 ### Usage
