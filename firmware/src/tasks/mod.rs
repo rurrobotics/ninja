@@ -10,4 +10,4 @@ pub use logger::task as logger;
 pub use net::task as net;
 pub use receiver::task as receiver;
 
-pub use actuator::{DrivetrainType, ExtensionType, GripperType};
+pub use actuator::{DrivetrainType, ExtensionType, GripperType, EnablesType};

@@ -23,6 +23,7 @@ use crate::{
 pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
 pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, TrapezoidProfile, DMA_CH1, DMA_CH2>;
 pub type ExtensionType<'d> = Extension<'d, PIO1, 2>;
+pub type EnablesType<'d> = (Output<'d>, Output<'d>, Output<'d>);
 
 async fn handle_action<'d>(
     action: Action,
@@ -30,7 +31,7 @@ async fn handle_action<'d>(
     extension: &mut ExtensionType<'d>,
     drivetrain: &mut DrivetrainType<'d>,
     proximity: &mut Proximity<'d>,
-    enables: (&mut Output<'d>, &mut Output<'d>, &mut Output<'d>),
+    enables: &mut EnablesType<'d>,
 ) {
     match action {
         Action::GripperOpen => gripper.open().await,
@@ -88,9 +89,11 @@ pub async fn task(
 
     let pwm02 = PioPwm::new(&mut common0, sm02, srv2pwm, &prg0);
 
-    let mut stp1en = Output::new(enables.0, Level::High);
-    let mut stp2en = Output::new(enables.1, Level::High);
-    let mut stp3en = Output::new(enables.2, Level::High);
+    let mut enables = (
+        Output::new(enables.0, Level::High),
+        Output::new(enables.1, Level::High),
+        Output::new(enables.2, Level::High),
+    );
 
     let mut gripper: GripperType = Gripper::new(pwm02);
 
@@ -138,7 +141,12 @@ pub async fn task(
         match cmd {
             RequestPacket::Game => {
                 select(
-                    handle_game(&mut gripper, &mut extension, &mut drivetrain),
+                    handle_game(
+                        &mut gripper,
+                        &mut extension,
+                        &mut drivetrain,
+                        &mut enables,
+                    ),
                     proximity.wait_for_proximity(),
                 )
                 .await;
@@ -151,7 +159,7 @@ pub async fn task(
                     &mut extension,
                     &mut drivetrain,
                     &mut proximity,
-                    (&mut stp1en, &mut stp2en, &mut stp3en),
+                    &mut enables,
                 )
                 .await
             }
@@ -163,7 +171,7 @@ pub async fn task(
                         &mut extension,
                         &mut drivetrain,
                         &mut proximity,
-                        (&mut stp1en, &mut stp2en, &mut stp3en),
+                        &mut enables,
                     )
                     .await;
                 }
