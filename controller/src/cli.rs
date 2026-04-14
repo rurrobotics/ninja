@@ -101,7 +101,6 @@ pub enum ActionCommand {
     ExtensionPull,
     Drive { speed: i32 },
     Turn { angle: i32 },
-    SetDrivetrainFrequency { frequency: u32 },
     SetExtensionFrequency { frequency: u32 },
     SetProximityThreshold { threshold: u32 },
     EnableProximity,
@@ -122,9 +121,6 @@ impl From<ActionCommand> for Action {
             ActionCommand::ExtensionPull => Action::ExtensionPull,
             ActionCommand::Drive { speed } => Action::Drive(speed),
             ActionCommand::Turn { angle } => Action::Turn(angle),
-            ActionCommand::SetDrivetrainFrequency { frequency } => {
-                Action::SetDrivetrainFrequency(frequency)
-            }
             ActionCommand::SetExtensionFrequency { frequency } => {
                 Action::SetExtensionFrequency(frequency)
             }

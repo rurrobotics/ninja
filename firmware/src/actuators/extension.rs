@@ -6,12 +6,9 @@ use embassy_rp::{
 };
 
 use crate::{
-    actuators::{
-        NoAcc, PioStepperProgram, Stepper, AccMode
-    },
+    actuators::{AccMode, NoAcc, PioStepperProgram, Stepper},
     config::{
-        EXTENSION_FREQUENCY, EXTENSION_HOME_FREQUENCY, EXTENSION_HOME_OFFSET,
-        EXTENSION_PULL_OFFSET,
+        EXTENSION_FREQUENCY, EXTENSION_HOME_FREQUENCY, EXTENSION_HOME_OFFSET, EXTENSION_PULL_OFFSET,
     },
 };
 
@@ -34,8 +31,8 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         let mut home = pio.make_pio_pin(home);
         home.set_pull(Pull::Up);
 
-        let mut stepper = Stepper::<'d, T, SM, NoAcc>::new(pio, sm, irq, stp, dir, program);
-        stepper.set_frequency(EXTENSION_FREQUENCY);
+        let stepper =
+            Stepper::<'d, T, SM, NoAcc>::new(pio, sm, irq, stp, dir, program, EXTENSION_FREQUENCY);
 
         Self {
             stepper,
@@ -96,7 +93,8 @@ impl<'d, T: Instance, const SM: usize> Extension<'d, T, SM> {
         self.stepper.sm.set_enable(false);
         let mut cfg = Config::default();
         cfg.set_set_pins(&[&self.stepper.stp]);
-        cfg.clock_divider = calculate_pio_clock_divider(EXTENSION_FREQUENCY * NoAcc::INSTRUCTION_COUNT);
+        cfg.clock_divider =
+            calculate_pio_clock_divider(EXTENSION_FREQUENCY * NoAcc::INSTRUCTION_COUNT);
         cfg.use_program(&stepper_prg.prg, &[]);
         self.stepper
             .sm

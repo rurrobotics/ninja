@@ -12,13 +12,12 @@ pub enum Action {
     Drive(i32),    // 4
     Turn(i32),     // 5
 
-    SetDrivetrainFrequency(u32), // 6
-    SetExtensionFrequency(u32),  // 7
-    SetProximityEnable(bool),    // 8
-    SetProximityThreshold(u32),  // 9
-    SetDrivetrainEnable(bool),   // 10
-    SetExtensionEnable(bool),    // 11
-    SetColor(Color),             // 12
+    SetExtensionFrequency(u32), // 6
+    SetProximityEnable(bool),   // 7
+    SetProximityThreshold(u32), // 8
+    SetDrivetrainEnable(bool),  // 9
+    SetExtensionEnable(bool),   // 10
+    SetColor(Color),            // 11
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]

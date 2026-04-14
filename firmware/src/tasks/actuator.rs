@@ -12,16 +12,11 @@ use embassy_rp::{
 use embassy_time::Timer;
 
 use crate::{
-    COMMAND_CHANNEL, RESPONSE_CHANNEL,
-    actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
-    packet::{Action, RequestPacket, ResponsePacket},
-    profiles::TrapezoidProfile,
-    sensors::Proximity,
-    strategy::handle_game,
+    COMMAND_CHANNEL, RESPONSE_CHANNEL, actuators::{Drivetrain, Extension, Gripper, PioStepperProgram}, config::DrivetrainProfile, packet::{Action, RequestPacket, ResponsePacket}, sensors::Proximity, strategy::handle_game
 };
 
 pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
-pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, TrapezoidProfile, DMA_CH1, DMA_CH2>;
+pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, DrivetrainProfile, DMA_CH1, DMA_CH2>;
 pub type ExtensionType<'d> = Extension<'d, PIO1, 2>;
 pub type EnablesType<'d> = (Output<'d>, Output<'d>, Output<'d>);
 
@@ -44,7 +39,6 @@ async fn handle_action<'d>(
         Action::Turn(degree) => {
             drivetrain.turn(degree as f64).await;
         }
-        Action::SetDrivetrainFrequency(freq) => drivetrain.set_frequency(freq),
         Action::SetExtensionFrequency(freq) => extension.set_frequency(freq),
         Action::SetProximityEnable(en) => proximity.enable = en,
         Action::SetProximityThreshold(thres) => proximity.threshold = thres,
@@ -114,7 +108,7 @@ pub async fn task(
         stepper2.1,
         stepper2.0,
         sm_irq11.2,
-        TrapezoidProfile::default(),
+        DrivetrainProfile::default(),
         &prg1,
     );
 

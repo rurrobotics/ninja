@@ -11,7 +11,6 @@ pub enum JsonAction {
     ExtensionPull,
     Drive { speed: i32 },
     Turn { angle: i32 },
-    SetDrivetrainFrequency { frequency: u32 },
     SetExtensionFrequency { frequency: u32 },
     SetProximityEnable { enable: bool },
     SetProximityThreshold { threshold: u32 },
@@ -29,9 +28,6 @@ impl From<JsonAction> for Action {
             JsonAction::ExtensionPull => Action::ExtensionPull,
             JsonAction::Drive { speed } => Action::Drive(speed),
             JsonAction::Turn { angle } => Action::Turn(angle),
-            JsonAction::SetDrivetrainFrequency { frequency } => {
-                Action::SetDrivetrainFrequency(frequency)
-            }
             JsonAction::SetExtensionFrequency { frequency } => {
                 Action::SetExtensionFrequency(frequency)
             }

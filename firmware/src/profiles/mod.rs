@@ -1,18 +1,14 @@
-mod scurve;
 mod trapezoid;
+mod power;
 
-pub use scurve::SCurveProfile;
+use crate::config::STEPPER_WITHACC_STEPS_LIMIT;
+use heapless::Vec;
+
 pub use trapezoid::TrapezoidProfile;
+pub use power::PowerProfile;
 
-use crate::config::STEPPER_MAX_ACCELERATION_STEPS;
+pub type Profile = Vec<u32, STEPPER_WITHACC_STEPS_LIMIT>;
 
 pub trait MotionProfile {
-    fn delays(
-        &self,
-        steps: u32,
-    ) -> (
-        heapless::Vec<u32, STEPPER_MAX_ACCELERATION_STEPS>,
-        usize,
-        heapless::Vec<u32, STEPPER_MAX_ACCELERATION_STEPS>,
-    );
+    fn delays(&self, steps: u32) -> Profile;
 }

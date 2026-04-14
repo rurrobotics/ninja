@@ -14,8 +14,7 @@ use crate::{
         stepper::{Stepper, WithAcc},
     },
     config::{
-        DRIVETRAIN_FREQUENCY, DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER,
-        DRIVETRAIN_WHEEL_DISTANCE,
+        DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER, DRIVETRAIN_WHEEL_DISTANCE,
     },
     packet::Color,
     profiles::MotionProfile,
@@ -30,8 +29,9 @@ pub struct Drivetrain<
     C1: Channel,
     C2: Channel,
 > {
-    stepper1: Stepper<'d, T, SM1, WithAcc<MP, C1>>,
-    stepper2: Stepper<'d, T, SM2, WithAcc<MP, C2>>,
+    stepper1: Stepper<'d, T, SM1, WithAcc<C1>>,
+    stepper2: Stepper<'d, T, SM2, WithAcc<C2>>,
+    profile: MP,
     color: Color,
 }
 
@@ -60,36 +60,44 @@ impl<
         profile: MP,
         program: &PioStepperProgram<'d, T, true>,
     ) -> Self {
-        let mut stepper1 = Stepper::<'d, T, SM1, WithAcc<MP, C1>>::new(
-            pio, sm1, irq1, stp1, dir1, dma1, profile, program,
-        );
-        stepper1.set_frequency(DRIVETRAIN_FREQUENCY);
+        let stepper1 =
+            Stepper::<'d, T, SM1, WithAcc<C1>>::new(pio, sm1, irq1, stp1, dir1, dma1, program);
 
-        let mut stepper2 = Stepper::<'d, T, SM2, WithAcc<MP, C2>>::new(
-            pio, sm2, irq2, stp2, dir2, dma2, profile, program,
-        );
-        stepper2.set_frequency(DRIVETRAIN_FREQUENCY);
+        let stepper2 =
+            Stepper::<'d, T, SM2, WithAcc<C2>>::new(pio, sm2, irq2, stp2, dir2, dma2, program);
 
         Self {
             stepper1,
             stepper2,
             color: Color::Blue,
+            profile,
         }
     }
 
-    pub fn set_frequency(&mut self, freq: u32) {
-        self.stepper1.set_frequency(freq);
-        self.stepper2.set_frequency(freq);
+    pub async fn step(&mut self, steps: i32, inverse: bool) {
+        self.stepper1.update_direction(steps);
+        self.stepper2.update_direction(match inverse {
+            true => -steps,
+            false => steps,
+        });
+        let Some(steps) = Stepper::<'d, T, SM1, WithAcc<C1>>::convert_steps(steps) else {
+            return;
+        };
+
+        let delays = self.profile.delays(steps);
+
+        join(self.stepper1.step(&delays), self.stepper2.step(&delays)).await;
     }
 
-    pub async fn step(&mut self, steps1: i32, steps2: i32) {
-        join(self.stepper1.step(steps1), self.stepper2.step(steps2)).await;
+    #[inline]
+    fn calculate_steps(distance: f64) -> i32 {
+        (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64 / (DRIVETRAIN_WHEEL_DIAMETER * PI))
+            as i32
     }
 
     pub async fn drive(&mut self, distance: f64) -> i32 {
-        let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
-            / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps, -steps).await;
+        let steps = Self::calculate_steps(distance);
+        self.step(steps, true).await;
         steps
     }
 
@@ -100,9 +108,8 @@ impl<
         };
 
         let distance = degrees * PI / 360.0 * DRIVETRAIN_WHEEL_DISTANCE;
-        let steps = (distance * DRIVETRAIN_STEPS_PER_REVOLUTION as f64
-            / (DRIVETRAIN_WHEEL_DIAMETER * PI)) as i32;
-        self.step(steps, steps).await;
+        let steps = Self::calculate_steps(distance);
+        self.step(steps, false).await;
         steps
     }
 
