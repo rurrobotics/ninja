@@ -110,6 +110,9 @@ pub enum ActionCommand {
     EnableExtension,
     DisableExtension,
     SetColor { color: CliColor },
+    SetAcceleration { acceleration: f64 },
+    SetMaxSpeed { max_speed: f64 },
+    // SetPCoefficient { p: f64 },
 }
 
 impl From<ActionCommand> for Action {
@@ -134,6 +137,11 @@ impl From<ActionCommand> for Action {
             ActionCommand::EnableExtension => Action::SetExtensionEnable(true),
             ActionCommand::DisableExtension => Action::SetExtensionEnable(false),
             ActionCommand::SetColor { color } => Action::SetColor(color.into()),
+            ActionCommand::SetAcceleration { acceleration } => {
+                Action::SetAcceleration(acceleration)
+            }
+            ActionCommand::SetMaxSpeed { max_speed } => Action::SetMaxSpeed(max_speed),
+            // ActionCommand::SetPCoefficient { p } => Action::SetPCoefficient(p),
         }
     }
 }

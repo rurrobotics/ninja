@@ -12,7 +12,12 @@ use embassy_rp::{
 use embassy_time::Timer;
 
 use crate::{
-    COMMAND_CHANNEL, RESPONSE_CHANNEL, actuators::{Drivetrain, Extension, Gripper, PioStepperProgram}, config::DrivetrainProfile, packet::{Action, RequestPacket, ResponsePacket}, sensors::Proximity, strategy::handle_game
+    COMMAND_CHANNEL, RESPONSE_CHANNEL,
+    actuators::{Drivetrain, Extension, Gripper, PioStepperProgram},
+    config::DrivetrainProfile,
+    packet::{Action, RequestPacket, ResponsePacket},
+    sensors::Proximity,
+    strategy::handle_game,
 };
 
 pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
@@ -48,6 +53,9 @@ async fn handle_action<'d>(
         }
         Action::SetExtensionEnable(en) => enables.2.set_level(en.into()),
         Action::SetColor(color) => drivetrain.set_color(color),
+        Action::SetAcceleration(acceleration) => drivetrain.profile.acceleration = acceleration,
+        Action::SetMaxSpeed(max_speed) => drivetrain.profile.max_speed = max_speed,
+        // Action::SetPCoefficient(p) => drivetrain.profile.p = p,
     };
 }
 
@@ -135,12 +143,7 @@ pub async fn task(
         match cmd {
             RequestPacket::Game => {
                 select(
-                    handle_game(
-                        &mut gripper,
-                        &mut extension,
-                        &mut drivetrain,
-                        &mut enables,
-                    ),
+                    handle_game(&mut gripper, &mut extension, &mut drivetrain, &mut enables),
                     proximity.wait_for_proximity(),
                 )
                 .await;
