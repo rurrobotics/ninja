@@ -18,6 +18,9 @@ pub enum Action {
     SetDrivetrainEnable(bool),  // 9
     SetExtensionEnable(bool),   // 10
     SetColor(Color),            // 11
+    SetAcceleration(f64),       // 12
+    SetMaxSpeed(f64),           // 13
+    // SetPCoefficient(f64),       // 14
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]

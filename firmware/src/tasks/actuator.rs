@@ -51,6 +51,9 @@ async fn handle_action<'d>(
         }
         Action::SetExtensionEnable(_en) => {}
         Action::SetColor(color) => drivetrain.set_color(color),
+        Action::SetAcceleration(acceleration) => drivetrain.profile.acceleration = acceleration,
+        Action::SetMaxSpeed(max_speed) => drivetrain.profile.max_speed = max_speed,
+        // Action::SetPCoefficient(p) => drivetrain.profile.p = p,
     };
 }
 

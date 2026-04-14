@@ -31,7 +31,7 @@ pub struct Drivetrain<
 > {
     stepper1: Stepper<'d, T, SM1, WithAcc<C1>>,
     stepper2: Stepper<'d, T, SM2, WithAcc<C2>>,
-    profile: MP,
+    pub profile: MP,
     color: Color,
 }
 

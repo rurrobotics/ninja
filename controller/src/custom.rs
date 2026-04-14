@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::{Color, Action};
+use crate::{Action, Color};
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "name", deny_unknown_fields)]
@@ -17,6 +17,9 @@ pub enum JsonAction {
     SetDrivetrainEnable { enable: bool },
     SetExtensionEnable { enable: bool },
     SetColor { color: Color },
+    SetAcceleration { acceleration: f64 },
+    SetMaxSpeed { max_speed: f64 },
+    // SetPCoefficient { p: f64 },
 }
 
 impl From<JsonAction> for Action {
@@ -38,6 +41,9 @@ impl From<JsonAction> for Action {
             JsonAction::SetDrivetrainEnable { enable } => Action::SetDrivetrainEnable(enable),
             JsonAction::SetExtensionEnable { enable } => Action::SetExtensionEnable(enable),
             JsonAction::SetColor { color } => Action::SetColor(color),
+            JsonAction::SetAcceleration { acceleration } => Action::SetAcceleration(acceleration),
+            JsonAction::SetMaxSpeed { max_speed } => Action::SetMaxSpeed(max_speed),
+            // JsonAction::SetPCoefficient { p } => Action::SetPCoefficient(p),
         }
     }
 }
