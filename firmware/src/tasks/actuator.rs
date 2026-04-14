@@ -146,7 +146,6 @@ pub async fn task(
                     .await;
                 }
             }
-
             RequestPacket::TestExtension(_number) => {}
             RequestPacket::TestRotation(number) => {
                 for _ in 0..number {

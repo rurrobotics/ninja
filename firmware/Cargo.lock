@@ -840,6 +840,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "hybrid"
+version = "0.2.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "cyw43",
+ "cyw43-pio",
+ "embassy-executor",
+ "embassy-futures",
+ "embassy-net",
+ "embassy-rp",
+ "embassy-sync",
+ "embassy-time",
+ "embassy-usb-logger",
+ "embedded-io-async 0.7.0",
+ "heapless 0.8.0",
+ "libm",
+ "log",
+ "panic-halt",
+ "postcard",
+ "serde",
+ "static_cell",
+]
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -970,31 +995,6 @@ name = "new_debug_unreachable"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
-
-[[package]]
-name = "ninja"
-version = "0.2.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "cyw43",
- "cyw43-pio",
- "embassy-executor",
- "embassy-futures",
- "embassy-net",
- "embassy-rp",
- "embassy-sync",
- "embassy-time",
- "embassy-usb-logger",
- "embedded-io-async 0.7.0",
- "heapless 0.8.0",
- "libm",
- "log",
- "panic-halt",
- "postcard",
- "serde",
- "static_cell",
-]
 
 [[package]]
 name = "num-traits"

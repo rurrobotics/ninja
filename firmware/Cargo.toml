@@ -1,5 +1,5 @@
 [package]
-name = "ninja"
+name = "hybrid"
 description = ""
 version = "0.2.0"
 edition = "2024"
@@ -36,7 +36,7 @@ heapless = { version = "=0.8.0", features = ["serde"] }
 libm = "0.2.16"
 
 [[bin]]
-name = "ninja"
+name = "hybrid"
 path = "src/main.rs"
 test = false
 doctest = false

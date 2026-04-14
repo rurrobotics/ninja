@@ -20,7 +20,7 @@ pub const WIFI_USE_STATIC: bool = {
     let s = env!("WIFI_USE_STATIC").as_bytes();
     matches!(s, b"true")
 };
-pub const WIFI_STATIC_IPV4CIDR: &'static str = "192.168.4.10/24";
+pub const WIFI_STATIC_IPV4CIDR: &'static str = "192.168.4.11/24";
 pub const WIFI_STATIC_GATEWAY: &'static str = "192.168.4.1";
 
 pub const RECEIVER_BUFFER_SIZE: usize = 1024;
