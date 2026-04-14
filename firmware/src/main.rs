@@ -79,12 +79,9 @@ async fn main(spawner: Spawner) {
         pio0.sm2,
         (pio1.sm0, pio1.irq0, p.DMA_CH1),
         (pio1.sm1, pio1.irq1, p.DMA_CH2),
-        (pio1.sm2, pio1.irq2),
         (p.PIN_19, p.PIN_21),
-        p.PIN_8,
         (p.PIN_5, p.PIN_6),
         (p.PIN_28, p.PIN_27),
-        (p.PIN_18, p.PIN_17),
         (p.PIN_10, p.PIN_12, p.PIN_13),
         p.PIN_15,
     ));
