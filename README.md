@@ -1,6 +1,6 @@
 # Ninja
 
-> Note: Hybrid SIMA firmware is available in the [hybrid](https://github.com/rurrobotics/ninja/tree/master) branch. 
+> Note: Hybrid SIMA firmware is available in the [hybrid](https://github.com/rurrobotics/ninja/tree/hybrid) branch. 
 
 ## Wiring
 
