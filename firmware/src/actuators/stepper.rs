@@ -196,7 +196,7 @@ impl<'d, T: Instance, const SM: usize, C: Channel> Stepper<'d, T, SM, WithAcc<C>
     }
 
     pub async fn step(&mut self, delays: &[u32]) {
-        self.sm.tx().wait_push(delays.len() as u32).await;
+        self.sm.tx().wait_push(delays.len() as u32 - 1).await;
 
         self.sm
             .tx()
