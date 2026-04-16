@@ -1,35 +1,7 @@
 [
     {
         "name": "Drive",
-        "speed": 160
-    },
-    {
-        "name": "Turn",
-        "angle": -90
-    },
-    {
-        "name": "GripperOpen"
-    },
-    {
-        "name": "ExtensionPush"
-    },
-    {
-        "name": "Drive",
-        "speed": 180
-    },
-    {
-        "name": "GripperClose"
-    },
-    {
-        "name": "ExtensionPull"
-    },
-    {
-        "name": "Drive",
-        "speed": 40
-    },
-    {
-        "name": "Drive",
-        "speed": -210
+        "speed": 460
     },
     {
         "name": "Turn",
@@ -37,72 +9,22 @@
     },
     {
         "name": "Drive",
-        "speed": 240
+        "speed": 1060
+    },
+    {
+        "name": "Drive",
+        "speed": -200
     },
     {
         "name": "Turn",
-        "angle": -90
+        "speed": -45
     },
-    {
+        {
         "name": "Drive",
-        "speed": 100
-    },
-    {
-        "name": "Turn",
-        "angle": 90
-    },
-    {
-        "name": "Drive",
-        "speed": 170
-    },
-    {
-        "name": "Drive",
-        "speed": -390
-    },
-    {
-        "name": "GripperOpen"
-    },
-    {
-        "name": "ExtensionPush"
-    },
-    {
-        "name": "Drive",
-        "speed": -90
-    },
-    {
-        "name": "Turn",
-        "angle": 90
-    },
-    {
-        "name": "Drive",
-        "speed": 90
-    },
-    {
-        "name": "Turn",
-        "angle": -90
-    },
-    {
-        "name": "Drive",
-        "speed": 480
-    },
-    {
-        "name": "Drive",
-        "speed": -50
-    },
-    {
-        "name": "Turn",
-        "angle": -70
-    },
-    {
-        "name": "Drive",
-        "speed": 210
+        "speed": 700
     },
     {
         "name": "SetDrivetrainEnable",
-        "enable": false
-    },
-    {
-        "name": "SetExtensionEnable",
         "enable": false
     }
 ]

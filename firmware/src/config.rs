@@ -55,7 +55,7 @@ pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
 );
 
 pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 56.0;
-pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 159.0;
+pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 117.5;
 pub const DRIVETRAIN_STEPS_PER_REVOLUTION: u32 = 400;
 pub type DrivetrainProfile = PowerProfile;
 
