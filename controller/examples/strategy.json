@@ -1,7 +1,7 @@
 [
     {
         "name": "Drive",
-        "speed": 460
+        "speed": 540
     },
     {
         "name": "Turn",
@@ -9,7 +9,7 @@
     },
     {
         "name": "Drive",
-        "speed": 1060
+        "speed": 1000
     },
     {
         "name": "Drive",
