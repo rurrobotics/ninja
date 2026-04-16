@@ -1,9 +1,10 @@
-use embassy_futures::select::select;
+use embassy_futures::select::{Either, select};
 use embassy_rp::{
     Peri,
-    gpio::{Level, Output},
+    gpio::{Input, Level, Output, Pull},
     peripherals::{
-        DMA_CH1, DMA_CH2, PIN_3, PIN_4, PIN_10, PIN_11, PIN_12, PIN_18, PIN_19, PIN_20, PIN_27, PIO0, PIO1
+        DMA_CH1, DMA_CH2, PIN_3, PIN_4, PIN_10, PIN_11, PIN_12, PIN_15, PIN_18, PIN_19, PIN_20,
+        PIN_27, PIO0, PIO1,
     },
     pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
@@ -22,6 +23,11 @@ use crate::{
 pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
 pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, DrivetrainProfile, DMA_CH1, DMA_CH2>;
 pub type EnablesType<'d> = (Output<'d>, Output<'d>);
+
+async fn wait_for_starter<'d>(starter: &mut Input<'d>) -> RequestPacket {
+    starter.wait_for_rising_edge().await;
+    RequestPacket::Game
+}
 
 async fn handle_action<'d>(
     action: Action,
@@ -75,6 +81,7 @@ pub async fn task(
     stepper1: (Peri<'static, PIN_18>, Peri<'static, PIN_20>),
     stepper2: (Peri<'static, PIN_11>, Peri<'static, PIN_12>),
     enables: (Peri<'static, PIN_19>, Peri<'static, PIN_10>),
+    starter: Peri<'static, PIN_15>,
     srv2pwm: Peri<'static, PIN_27>,
 ) -> ! {
     let prg0 = PioPwmProgram::new(&mut common0);
@@ -108,8 +115,13 @@ pub async fn task(
         &prg1,
     );
 
+    let mut starter = Input::new(starter, Pull::Up);
+
     loop {
-        let cmd = COMMAND_CHANNEL.wait().await;
+        let cmd = match select(COMMAND_CHANNEL.wait(), wait_for_starter(&mut starter)).await {
+            Either::First(r) => r,
+            Either::Second(r) => r,
+        };
 
         log::info!("Actuator received: {:?}", cmd);
 
