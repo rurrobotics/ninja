@@ -45,8 +45,8 @@ async fn main(spawner: Spawner) {
     spawner.must_spawn(tasks::logger(p.USB));
 
     // Stepper driver
-    let _gp3 = Output::new(p.PIN_3, Level::High);
-    let _gp20 = Output::new(p.PIN_20, Level::High);
+    let _gp13 = Output::new(p.PIN_13, Level::High);
+    let _gp21 = Output::new(p.PIN_21, Level::High);
 
     let fw = include_bytes!("../../binary/43439A0.bin");
     let clm = include_bytes!("../../binary/43439A0_clm.bin");
@@ -74,10 +74,10 @@ async fn main(spawner: Spawner) {
         pio0.sm2,
         (pio1.sm0, pio1.irq0, p.DMA_CH1),
         (pio1.sm1, pio1.irq1, p.DMA_CH2),
-        (p.PIN_19, p.PIN_21),
-        (p.PIN_5, p.PIN_6),
-        (p.PIN_28, p.PIN_27),
-        (p.PIN_10, p.PIN_12),
+        (p.PIN_4, p.PIN_3),
+        (p.PIN_18, p.PIN_20),
+        (p.PIN_11, p.PIN_12),
+        (p.PIN_19, p.PIN_10),
         p.PIN_15,
     ));
 

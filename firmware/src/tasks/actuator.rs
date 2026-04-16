@@ -3,8 +3,7 @@ use embassy_rp::{
     Peri,
     gpio::{Level, Output},
     peripherals::{
-        DMA_CH1, DMA_CH2, PIN_5, PIN_6, PIN_10, PIN_12, PIN_15, PIN_19, PIN_21, PIN_27,
-        PIN_28, PIO0, PIO1,
+        DMA_CH1, DMA_CH2, PIN_3, PIN_4, PIN_10, PIN_11, PIN_12, PIN_15, PIN_18, PIN_19, PIN_20, PIO0, PIO1
     },
     pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
@@ -72,10 +71,10 @@ pub async fn task(
         Irq<'static, PIO1, 1>,
         Peri<'static, DMA_CH2>,
     ),
-    proximity: (Peri<'static, PIN_19>, Peri<'static, PIN_21>),
-    stepper1: (Peri<'static, PIN_5>, Peri<'static, PIN_6>),
-    stepper2: (Peri<'static, PIN_28>, Peri<'static, PIN_27>),
-    enables: (Peri<'static, PIN_10>, Peri<'static, PIN_12>),
+    proximity: (Peri<'static, PIN_4>, Peri<'static, PIN_3>),
+    stepper1: (Peri<'static, PIN_18>, Peri<'static, PIN_20>),
+    stepper2: (Peri<'static, PIN_11>, Peri<'static, PIN_12>),
+    enables: (Peri<'static, PIN_19>, Peri<'static, PIN_10>),
     srv2pwm: Peri<'static, PIN_15>,
 ) -> ! {
     let prg0 = PioPwmProgram::new(&mut common0);
