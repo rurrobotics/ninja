@@ -17,7 +17,7 @@
     },
     {
         "name": "Turn",
-        "speed": -45
+        "angle": -45
     },
         {
         "name": "Drive",
