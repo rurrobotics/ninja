@@ -77,7 +77,7 @@ async fn main(spawner: Spawner) {
         (p.PIN_19, p.PIN_21),
         (p.PIN_5, p.PIN_6),
         (p.PIN_28, p.PIN_27),
-        (p.PIN_10, p.PIN_12, p.PIN_13),
+        (p.PIN_10, p.PIN_12),
         p.PIN_15,
     ));
 
