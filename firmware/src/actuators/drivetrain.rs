@@ -84,7 +84,7 @@ impl<
             return;
         };
 
-        let delays = self.profile.delays(steps);
+        let delays = self.profile.delays(steps + 1);
 
         join(self.stepper1.step(&delays), self.stepper2.step(&delays)).await;
     }
