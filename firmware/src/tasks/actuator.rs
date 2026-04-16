@@ -1,10 +1,10 @@
-use embassy_futures::select::select;
+use embassy_futures::select::{Either, select};
 use embassy_rp::{
     Peri,
-    gpio::{Level, Output},
+    gpio::{Input, Level, Output, Pull},
     peripherals::{
-        DMA_CH1, DMA_CH2, PIN_5, PIN_6, PIN_8, PIN_10, PIN_12, PIN_13, PIN_15, PIN_17, PIN_18,
-        PIN_19, PIN_21, PIN_27, PIN_28, PIO0, PIO1,
+        DMA_CH1, DMA_CH2, PIN_5, PIN_6, PIN_8, PIN_10, PIN_12, PIN_13, PIN_15, PIN_16, PIN_17,
+        PIN_18, PIN_19, PIN_21, PIN_27, PIN_28, PIO0, PIO1,
     },
     pio::{Common, Irq, StateMachine},
     pio_programs::pwm::{PioPwm, PioPwmProgram},
@@ -24,6 +24,11 @@ pub type GripperType<'d> = Gripper<'d, PIO0, 2>;
 pub type DrivetrainType<'d> = Drivetrain<'d, PIO1, 0, 1, DrivetrainProfile, DMA_CH1, DMA_CH2>;
 pub type ExtensionType<'d> = Extension<'d, PIO1, 2>;
 pub type EnablesType<'d> = (Output<'d>, Output<'d>, Output<'d>);
+
+async fn wait_for_starter<'d>(starter: &mut Input<'d>) -> RequestPacket {
+    starter.wait_for_rising_edge().await;
+    RequestPacket::Game
+}
 
 async fn handle_action<'d>(
     action: Action,
@@ -85,6 +90,7 @@ pub async fn task(
         Peri<'static, PIN_12>,
         Peri<'static, PIN_13>,
     ),
+    starter: Peri<'static, PIN_16>,
     srv2pwm: Peri<'static, PIN_15>,
 ) -> ! {
     let prg0 = PioPwmProgram::new(&mut common0);
@@ -130,13 +136,18 @@ pub async fn task(
         &prg2,
     );
 
+    let mut starter = Input::new(starter, Pull::Up);
+
     // Home
     log::info!("Homing");
     gripper.close().await;
     extension.home(&mut common1, &prg2).await;
 
     loop {
-        let cmd = COMMAND_CHANNEL.wait().await;
+        let cmd = match select(COMMAND_CHANNEL.wait(), wait_for_starter(&mut starter)).await {
+            Either::First(r) => r,
+            Either::Second(r) => r,
+        };
 
         log::info!("Actuator received: {:?}", cmd);
 
