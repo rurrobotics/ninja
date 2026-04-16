@@ -44,14 +44,14 @@ pub const SERVO_DEFAULT_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micro
 pub const SERVO_DEFAULT_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(20000);
 pub const SERVO_MAX_DEGREE_ROTATION: u64 = 180;
 
-pub const GRIPPER_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(320);
-pub const GRIPPER_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1200);
-pub const GRIPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(1786);
-pub const GRIPPER_MIN_ANGLE: u64 = 50;
-pub const GRIPPER_MAX_ANGLE: u64 = 153;
-// 0.04s per 60, 0.005s margin
+pub const GRIPPER_MIN_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(1000);
+pub const GRIPPER_MAX_PULSE_WIDTH: CoreDuration = CoreDuration::from_micros(2000);
+pub const GRIPPER_REFRESH_INTERVAL: CoreDuration = CoreDuration::from_micros(20000);
+pub const GRIPPER_MIN_ANGLE: u64 = 0;
+pub const GRIPPER_MAX_ANGLE: u64 = 180;
+// 0.2s per 60, 0.05s margin
 pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
-    Duration::from_millis(40 + 5).as_nanos() * (GRIPPER_MAX_ANGLE - GRIPPER_MIN_ANGLE) / 60,
+    Duration::from_millis(250).as_nanos() * (GRIPPER_MAX_ANGLE - GRIPPER_MIN_ANGLE) / 60,
 );
 
 pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 56.0;

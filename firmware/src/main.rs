@@ -78,7 +78,7 @@ async fn main(spawner: Spawner) {
         (p.PIN_18, p.PIN_20),
         (p.PIN_11, p.PIN_12),
         (p.PIN_19, p.PIN_10),
-        p.PIN_15,
+        p.PIN_27,
     ));
 
     static STATE: StaticCell<cyw43::State> = StaticCell::new();
