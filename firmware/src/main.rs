@@ -32,14 +32,9 @@ use crate::config::{
 use crate::interrupts::Irqs;
 use crate::packet::{RequestPacket, ResponsePacket};
 
-#[unsafe(link_section = ".bi_entries")]
+#[unsafe(link_section = ".boot_loader")]
 #[used]
-pub static PICOTOOL_ENTRIES: [embassy_rp::binary_info::EntryAddr; 4] = [
-    embassy_rp::binary_info::rp_program_name!(config::NAME),
-    embassy_rp::binary_info::rp_program_description!(config::DESCRIPTION),
-    embassy_rp::binary_info::rp_cargo_version!(),
-    embassy_rp::binary_info::rp_program_build_attribute!(),
-];
+pub static BOOT2: [u8; 256] = rp2040_boot2::BOOT_LOADER_GENERIC_03H;
 
 static COMMAND_CHANNEL: Signal<CriticalSectionRawMutex, RequestPacket> = Signal::new();
 static RESPONSE_CHANNEL: Signal<CriticalSectionRawMutex, ResponsePacket> = Signal::new();

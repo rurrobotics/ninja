@@ -19,7 +19,6 @@ embassy-rp = { version = "0.9.0", features = [
   "time-driver",
   "critical-section-impl",
   "rp2040",
-  "binary-info",
 ] }
 
 cortex-m = "0.7.7"
@@ -35,6 +34,7 @@ postcard = "1.1.3"
 serde = { version = "1.0.228", default-features = false }
 heapless = { version = "=0.8.0", features = ["serde"] }
 libm = "0.2.16"
+rp2040-boot2 = "0.3.0"
 
 [[bin]]
 name = "hybrid"
