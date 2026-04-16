@@ -10,6 +10,8 @@ pub async fn handle_game<'d>(
     enables: &mut EnablesType<'d>,
 ) {
     let start = Instant::now();
+    
+    Timer::after_secs(10).await;
 
     enables.0.set_high();
     enables.1.set_high();
