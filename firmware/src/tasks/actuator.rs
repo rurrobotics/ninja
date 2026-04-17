@@ -82,7 +82,7 @@ pub async fn task(
         Peri<'static, DMA_CH2>,
     ),
     sm_irq12: (StateMachine<'static, PIO1, 2>, Irq<'static, PIO1, 2>),
-    proximity: (Peri<'static, PIN_19>, Peri<'static, PIN_21>),
+    proximity: (Peri<'static, PIN_21>, Peri<'static, PIN_19>),
     btn: Peri<'static, PIN_8>,
     stepper1: (Peri<'static, PIN_5>, Peri<'static, PIN_6>),
     stepper2: (Peri<'static, PIN_28>, Peri<'static, PIN_27>),
