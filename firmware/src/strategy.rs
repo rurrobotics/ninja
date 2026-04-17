@@ -15,7 +15,7 @@ pub async fn handle_game<'d>(
     enables.0.set_high();
     enables.1.set_high();
 
-    drivetrain.drive(395.0).await;
+    drivetrain.drive(540.0).await;
     drivetrain.turn(90.0).await;
     drivetrain.drive(600.0).await;
     drivetrain.drive(-200.0).await;
