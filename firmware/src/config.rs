@@ -31,8 +31,9 @@ pub const CYW43_POWER_MANAGEMENT_MODE: PowerManagementMode = PowerManagementMode
 pub const STEPPER_WITHACC_STEPS_LIMIT: usize = 4096;
 pub const STEPPER_WITHACC_TIMER_FREQUENCY: u32 = 1_000_000;
 
-pub const PROXIMITY_DEFAULT_ENABLE: bool = false;
-pub const PROXIMITY_DEFAULT_THRESHOLD: u32 = 60; // in mm
+pub const PROXIMITY_DEFAULT_ENABLE: bool = true;
+pub const PROXIMITY_DEFAULT_THRESHOLD: f64 = 60.0; // in mm
+pub const PROXIMITY_ALPHA: f64 = 0.2; // PROXIMITY_ALPHA * value + (1 - PROXIMITY_ALPHA) * last
 
 pub const EXTENSION_HOME_FREQUENCY: u32 = 400;
 pub const EXTENSION_HOME_OFFSET: i32 = 120;

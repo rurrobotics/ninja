@@ -14,7 +14,7 @@ pub enum Action {
 
     SetExtensionFrequency(u32), // 6
     SetProximityEnable(bool),   // 7
-    SetProximityThreshold(u32), // 8
+    SetProximityThreshold(f64), // 8
     SetDrivetrainEnable(bool),  // 9
     SetExtensionEnable(bool),   // 10
     SetColor(Color),            // 11

@@ -13,7 +13,7 @@ pub enum JsonAction {
     Turn { angle: i32 },
     SetExtensionFrequency { frequency: u32 },
     SetProximityEnable { enable: bool },
-    SetProximityThreshold { threshold: u32 },
+    SetProximityThreshold { threshold: f64 },
     SetDrivetrainEnable { enable: bool },
     SetExtensionEnable { enable: bool },
     SetColor { color: Color },

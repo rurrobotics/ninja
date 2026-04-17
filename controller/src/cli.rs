@@ -102,7 +102,7 @@ pub enum ActionCommand {
     Drive { speed: i32 },
     Turn { angle: i32 },
     SetExtensionFrequency { frequency: u32 },
-    SetProximityThreshold { threshold: u32 },
+    SetProximityThreshold { threshold: f64 },
     EnableProximity,
     DisableProximity,
     EnableDrivetrain,
