@@ -54,7 +54,7 @@ pub async fn handle_game<'d>(
         Timer::after_millis(100).await
     }
 
-    while start.elapsed() < Duration::from_secs(100) {
+    loop {
         gripper.close().await;
         Timer::after_millis(100).await;
         gripper.open().await;
