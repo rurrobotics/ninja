@@ -26,7 +26,7 @@ pub type ExtensionType<'d> = Extension<'d, PIO1, 2>;
 pub type EnablesType<'d> = (Output<'d>, Output<'d>, Output<'d>);
 
 async fn wait_for_starter<'d>(starter: &mut Input<'d>) -> RequestPacket {
-    starter.wait_for_rising_edge().await;
+    starter.wait_for_falling_edge().await;
     RequestPacket::Game
 }
 
