@@ -19,6 +19,8 @@ pub enum JsonAction {
     SetColor { color: Color },
     SetAcceleration { acceleration: f64 },
     SetMaxSpeed { max_speed: f64 },
+    StopDrivetrain,
+    StartDrivetrain,
     // SetPCoefficient { p: f64 },
 }
 
@@ -43,6 +45,8 @@ impl From<JsonAction> for Action {
             JsonAction::SetColor { color } => Action::SetColor(color),
             JsonAction::SetAcceleration { acceleration } => Action::SetAcceleration(acceleration),
             JsonAction::SetMaxSpeed { max_speed } => Action::SetMaxSpeed(max_speed),
+            JsonAction::StopDrivetrain => Action::StopDrivetrain,
+            JsonAction::StartDrivetrain => Action::StartDrivetrain,
             // JsonAction::SetPCoefficient { p } => Action::SetPCoefficient(p),
         }
     }

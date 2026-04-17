@@ -112,6 +112,8 @@ pub enum ActionCommand {
     SetColor { color: CliColor },
     SetAcceleration { acceleration: f64 },
     SetMaxSpeed { max_speed: f64 },
+    StopDrivetrain,
+    StartDrivetrain,
     // SetPCoefficient { p: f64 },
 }
 
@@ -141,6 +143,8 @@ impl From<ActionCommand> for Action {
                 Action::SetAcceleration(acceleration)
             }
             ActionCommand::SetMaxSpeed { max_speed } => Action::SetMaxSpeed(max_speed),
+            ActionCommand::StopDrivetrain => Action::StopDrivetrain,
+            ActionCommand::StartDrivetrain => Action::StartDrivetrain,
             // ActionCommand::SetPCoefficient { p } => Action::SetPCoefficient(p),
         }
     }

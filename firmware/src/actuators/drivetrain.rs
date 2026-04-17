@@ -113,6 +113,16 @@ impl<
         steps
     }
 
+    pub fn stop(&mut self) {
+        self.stepper1.sm.set_enable(false);
+        self.stepper2.sm.set_enable(false);
+    }
+
+    pub fn start(&mut self) {
+        self.stepper1.sm.set_enable(true);
+        self.stepper2.sm.set_enable(true);
+    }
+
     pub fn set_color(&mut self, color: Color) {
         self.color = color;
     }
