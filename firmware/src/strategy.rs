@@ -7,20 +7,20 @@ pub async fn handle_game<'d>(
     drivetrain: &mut DrivetrainType<'d>,
     enables: &mut EnablesType<'d>,
 ) {
-    // enables.0.set_low();
-    // enables.1.set_low();
+    enables.0.set_low();
+    enables.1.set_low();
 
-    // Timer::after_secs(85).await;
+    Timer::after_secs(85).await;
 
     enables.0.set_high();
     enables.1.set_high();
 
-    drivetrain.drive(340.0).await;
+    drivetrain.drive(395.0).await;
     drivetrain.turn(90.0).await;
     drivetrain.drive(600.0).await;
     drivetrain.drive(-200.0).await;
-    drivetrain.turn(-60.0).await;
-    drivetrain.drive(700.0).await;
+    drivetrain.turn(-45.0).await;
+    drivetrain.drive(720.0).await;
 
     enables.0.set_low();
     enables.1.set_low();
