@@ -4,6 +4,7 @@ use core::time::Duration as CoreDuration;
 use cyw43::PowerManagementMode;
 use embassy_time::Duration;
 
+use crate::packet::Color;
 use crate::profiles::PowerProfile;
 
 pub const NAME: &CStr = unsafe {
@@ -58,6 +59,7 @@ pub const GRIPPER_ACTUATE_TIME: Duration = Duration::from_nanos(
 pub const DRIVETRAIN_WHEEL_DIAMETER: f64 = 56.0;
 pub const DRIVETRAIN_WHEEL_DISTANCE: f64 = 159.0;
 pub const DRIVETRAIN_STEPS_PER_REVOLUTION: u32 = 400;
+pub const DRIVETRAIN_DEFAULT_COLOR: Color = Color::Yellow;
 pub type DrivetrainProfile = PowerProfile;
 
 pub const TRAPEZOID_DEFAULT_MAX_SPEED: f64 = 400.0 / (DRIVETRAIN_WHEEL_DIAMETER / 2.0);

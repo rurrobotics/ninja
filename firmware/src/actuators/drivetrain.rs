@@ -14,7 +14,7 @@ use crate::{
         stepper::{Stepper, WithAcc},
     },
     config::{
-        DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER, DRIVETRAIN_WHEEL_DISTANCE,
+        DRIVETRAIN_DEFAULT_COLOR, DRIVETRAIN_STEPS_PER_REVOLUTION, DRIVETRAIN_WHEEL_DIAMETER, DRIVETRAIN_WHEEL_DISTANCE
     },
     packet::Color,
     profiles::MotionProfile,
@@ -69,7 +69,7 @@ impl<
         Self {
             stepper1,
             stepper2,
-            color: Color::Blue,
+            color: DRIVETRAIN_DEFAULT_COLOR,
             profile,
         }
     }
