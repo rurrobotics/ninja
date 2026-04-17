@@ -61,6 +61,8 @@ async fn handle_action<'d>(
         Action::SetAcceleration(acceleration) => drivetrain.profile.acceleration = acceleration,
         Action::SetMaxSpeed(max_speed) => drivetrain.profile.max_speed = max_speed,
         // Action::SetPCoefficient(p) => drivetrain.profile.p = p,
+        Action::StopDrivetrain => drivetrain.stop(),
+        Action::StartDrivetrain => drivetrain.start(),
     };
 }
 

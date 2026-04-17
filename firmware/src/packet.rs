@@ -20,7 +20,8 @@ pub enum Action {
     SetColor(Color),            // 11
     SetAcceleration(f64),       // 12
     SetMaxSpeed(f64),           // 13
-    // SetPCoefficient(f64),       // 14
+    StopDrivetrain,             // 14
+    StartDrivetrain,            // 15
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq)]
