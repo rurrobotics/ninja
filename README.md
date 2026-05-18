@@ -1,5 +1,7 @@
 # Ninja
 
+[![Gameplay](./assets/game.gif)](./assets/game.mp4)
+
 > Note: Hybrid SIMA firmware is available in the [hybrid](https://github.com/rurrobotics/ninja/tree/hybrid) branch. 
 
 ## Wiring
